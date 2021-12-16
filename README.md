@@ -1,8 +1,8 @@
-# Data Science Seminar Project
-#### Winter Semester 2021/22
-## Simon Müller
+# (Multi-)Media Recommender System
+## Data Science Seminar Project
+##### Winter Semester 2021/22
+#### Simon Müller
 
-# Topic: (Multi-)Media Recommender System
 
 Recommending books using a Recommender System based on [goodreads.com](https://www.goodreads.com/) data from the UCSD Book Graph[^fn1]
 
