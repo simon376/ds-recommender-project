@@ -1,2 +1,6 @@
 saved_model/
 data/
+logs/
+*.png
+*.json
+__pycache__/
