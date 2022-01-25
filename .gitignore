@@ -4,3 +4,4 @@ logs/
 *.png
 *.json
 __pycache__/
+models/*
