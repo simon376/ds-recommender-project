@@ -25,12 +25,12 @@ class EmailCallback(keras.callbacks.Callback):
         if train_size is not None:
             self.message_contents += f"size of train dataset: {train_size}\n"
         if test_size is not None:
-            self.message_contents += f"size of test dataset: {train_size}\n"
+            self.message_contents += f"size of test dataset: {test_size}\n"
 
 
     def on_train_begin(self, logs=None):
-        msg = "Start Training with Model: \n"
-        msg += self.get_model_summary(self.model)
+        msg = "Start Training with Model...\n"
+        # msg += self.get_model_summary(self.model)
         keys = str(list(logs.keys()))
         msg += f"Starting training; got log keys: {keys}\n"
         msg += str([f"{k}: {v}" for k,v in logs.items()])
@@ -65,24 +65,26 @@ class EmailCallback(keras.callbacks.Callback):
     def send_message(self):
         import datetime
         date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        import tempfile
         import os
+        import shutil
+
+
         res = ""
-
-        with tempfile.TemporaryDirectory() as temp_dir:
-            fn = os.path.join(temp_dir, "plot.png")
-            keras.utils.plot_model(
-                self.model, 
-                to_file=fn, 
-                show_shapes=True, 
-                rankdir="LR")
-        
-            res = self.yag.send(
-                to=self.to, 
-                subject=f"TensorFlow Training Callback {date}", 
-                contents=self.message_contents,
-                attachments=fn)
-
+        temp_dir = "./temp/"
+        os.mkdir(temp_dir)
+        fn = os.path.join(temp_dir, "plot.png")
+        keras.utils.plot_model(
+            self.model, 
+            to_file=fn, 
+            show_shapes=True, 
+            rankdir="LR")
+    
+        res = self.yag.send(
+            to=self.to, 
+            subject=f"TensorFlow Training Callback {date}", 
+            contents=self.message_contents,
+            attachments=fn)
+        shutil.rmtree(temp_dir)
         print("e-mail sent.")
         print(res)
 
