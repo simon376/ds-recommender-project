@@ -1,4 +1,4 @@
-# (Multi-)Media Recommender System
+# Book Recommender System
 ## Data Science Seminar Project
 ##### Winter Semester 2021/22
 #### Simon Müller
@@ -17,6 +17,8 @@ Steps needed:
 Optional:
 - combining the Book data with another dataset from a different domain, e.g. MovieLens 25M[^fn2] to create a multi-media recommender system, suggesting books based on movie preferences and vice versa.
 - this would need more text processing to find similarities between the datasets, e.g. by extracting tags from movies and matching them to book descriptions and goodreads shelf-names
+
+=> this idea has since been scrapped, since it's out of reach in the scale of this student project.
 
 
 [^fn1]: Mengting Wan, Rishabh Misra, Ndapa Nakashole, Julian McAuley, https://sites.google.com/eng.ucsd.edu/ucsdbookgraph/home.
