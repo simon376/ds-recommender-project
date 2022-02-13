@@ -1,3 +1,6 @@
+import os
+from matplotlib import pyplot as plt
+import numpy as np
 import yagmail
 import tensorflow as tf
 from tensorflow import keras
@@ -10,13 +13,19 @@ class EmailCallback(keras.callbacks.Callback):
     def __init__(self, to: str="simon376@gmail.com", train_size=None, val_size=None, wait_for_train_end=False) -> None:
         super().__init__()
         print("setting up yagmail...")
-        self.yag = yagmail.SMTP("simon376@gmail.com", oauth2_file="~/client_secret_1098025119208-cfsgjrjvin482rsin7otp0sckch691p3.apps.googleusercontent.com.json")
+        self.yag = yagmail.SMTP("simon376@gmail.com", "qoru muzy aaob jzdp")
         self.to = to
         if train_size is not None:
             self.message_contents += f"size of train dataset: {train_size}\n"
         if val_size is not None:
             self.message_contents += f"size of validation dataset: {val_size}\n"
         self.wait_for_train_end = wait_for_train_end
+        # Initialize the lists for holding the logs, losses and accuracies
+        self.losses = []
+        self.acc = []
+        self.val_losses = []
+        self.val_acc = []
+        self.logs = []
 
 
     def on_train_begin(self, logs=None):
@@ -31,6 +40,29 @@ class EmailCallback(keras.callbacks.Callback):
 
         self.message_contents += (msg + "\n---\n")
         print(msg)
+
+
+        N = np.arange(0, len(self.losses))
+
+        # You can chose the style of your preference
+        # print(plt.style.available) to see the available options
+        plt.style.use("seaborn")
+
+        # Plot train loss, train acc, val loss and val acc against epochs passed
+        plt.figure()
+        plt.plot(N, self.losses, label = "train_loss")
+        plt.plot(N, self.acc, label = "train_acc")
+        plt.plot(N, self.val_losses, label = "val_loss")
+        plt.plot(N, self.val_acc, label = "val_acc")
+        plt.title("Training Loss and Accuracy")
+        plt.xlabel("Epoch #")
+        plt.ylabel("Loss/Accuracy")
+        plt.legend()
+        temp = self.get_temp_dir()
+        plt.savefig(os.path.join(temp, "histplot.png"))
+        plt.close()
+
+
         if not self.wait_for_train_end:
             print("sendming e-mail...")
             self.send_message()
@@ -51,10 +83,25 @@ class EmailCallback(keras.callbacks.Callback):
             print("sending e-mail..")
             self.send_message()
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs={}):
         log_keys = [f"{k}: {v:7.2f}" for k,v in logs.items() if k != 'loss']
         msg = f"The average loss for epoch {epoch} is {logs['loss']:7.2f} with the following metrics: {log_keys}."
         self.message_contents += (msg + "\n")
+        
+        # Append the logs, losses and accuracies to the lists
+        self.logs.append(logs)
+        self.losses.append(logs.get('loss'))
+        self.acc.append(logs.get('acc'))
+        self.val_losses.append(logs.get('val_loss'))
+        self.val_acc.append(logs.get('val_acc'))
+
+    @staticmethod
+    def get_temp_dir():
+        import os
+        temp_dir = "./temp/"
+        if not os.path.exists(temp_dir):
+            os.mkdir(temp_dir)
+        return temp_dir
 
 
     def send_message(self):
@@ -65,12 +112,13 @@ class EmailCallback(keras.callbacks.Callback):
 
 
         res = ""
-        temp_dir = "./temp/"
-        os.mkdir(temp_dir)
-        fn = os.path.join(temp_dir, "plot.png")
+        temp_dir = self.get_temp_dir()
+        modelplot_fn = os.path.join(temp_dir, "plot.png")
+        histplot_fn = os.path.join(temp_dir, "histplot.png")
+        attachments = [histplot_fn, modelplot_fn] if os.path.exists(histplot_fn) else [modelplot_fn]
         keras.utils.plot_model(
             self.model, 
-            to_file=fn, 
+            to_file=modelplot_fn, 
             show_shapes=True, 
             rankdir="LR")
     
@@ -78,7 +126,8 @@ class EmailCallback(keras.callbacks.Callback):
             to=self.to, 
             subject=f"TensorFlow Training Callback {self.model.name} {date}", 
             contents=self.message_contents,
-            attachments=fn)
+            attachments=attachments)
+
         shutil.rmtree(temp_dir)
         print("e-mail sent.")
         print(res)
