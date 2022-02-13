@@ -4,17 +4,18 @@ import numpy as np
 import yagmail
 import tensorflow as tf
 from tensorflow import keras
-
+from typing import Optional
 
 class EmailCallback(keras.callbacks.Callback):
     message_contents = ""
     yag: yagmail.SMTP
     
-    def __init__(self, to: str="simon376@gmail.com", train_size=None, val_size=None, wait_for_train_end=False) -> None:
+    def __init__(self, to: Optional[str]=None, train_size=None, val_size=None, wait_for_train_end=False) -> None:
         super().__init__()
         print("setting up yagmail...")
-        self.yag = yagmail.SMTP("simon376@gmail.com", "qoru muzy aaob jzdp")
-        self.to = to
+        import credentials
+        self.yag = yagmail.SMTP(credentials.username, credentials.app_password)
+        self.to = to if to is not None else credentials.username
         if train_size is not None:
             self.message_contents += f"size of train dataset: {train_size}\n"
         if val_size is not None:
