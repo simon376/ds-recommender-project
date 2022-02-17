@@ -142,3 +142,46 @@ class EmailCallback(keras.callbacks.Callback):
         summary_string = stream.getvalue()
         stream.close()
         return summary_string
+
+
+def send_hyperparameter_results_email(tuner, _to = None, ):
+    import credentials
+    yag = yagmail.SMTP(credentials.username, credentials.app_password)
+    to = _to if _to is not None else credentials.username
+    import datetime
+    date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    import os
+    import shutil
+
+    # Get the top model.
+    best_model= tuner.get_best_models()
+    summary = None
+    model_name = "unknown model"
+    try:
+        # Build the model.
+        # Needed for `Sequential` without specified `input_shape`.
+        best_model.build(input_shape=(None, 28, 28))
+        summary = best_model.summary()
+        model_name = best_model.name
+    except:
+        pass
+    
+    res = ""
+    import os
+    temp_dir = "./temp/"
+    if not os.path.exists(temp_dir):
+        os.mkdir(temp_dir)
+
+    contents = ("search results summary: \n " + tuner.results_summary())
+    if summary is not None:
+        contents += ("best model: \n" + summary + "\n---\n")
+
+    res = yag.send(
+        to=to, 
+        subject=f"TensorFlow Training Callback {model_name} {date}", 
+        contents=contents)
+
+    shutil.rmtree(temp_dir)
+    print("hyperparameter training results e-mail sent.")
+    print(res)
+
