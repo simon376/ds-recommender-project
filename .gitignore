@@ -6,4 +6,5 @@ logs/
 __pycache__/
 models/*
 credentials.py
-venv/*
+venv/
+graphviz-2.50.0

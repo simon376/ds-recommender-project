@@ -5,6 +5,7 @@ import yagmail
 import tensorflow as tf
 from tensorflow import keras
 from typing import Optional
+import datetime
 
 class EmailCallback(keras.callbacks.Callback):
     message_contents = ""
@@ -30,13 +31,13 @@ class EmailCallback(keras.callbacks.Callback):
 
 
     def on_train_begin(self, logs=None):
-        msg = f"Start Training with Model {self.model.name}\n"
+        msg = f"Start Training with Model {self.model.name}, wall clock time: {datetime.datetime.now()}\n"
         msg += str([f"{k}: {v}" for k,v in logs.items()])
         self.message_contents += (msg + "\n---\n")
         print(msg)
 
     def on_train_end(self, logs=None):
-        msg = f"Stop training.\n"
+        msg = f"Training finished, wall clock time: {datetime.datetime.now()}.\n"
         msg += str([f"{k}: {v}" for k,v in logs.items()])
 
         self.message_contents += (msg + "\n---\n")
@@ -60,12 +61,12 @@ class EmailCallback(keras.callbacks.Callback):
         plt.ylabel("Loss/Accuracy")
         plt.legend()
         temp = self.get_temp_dir()
-        plt.savefig(os.path.join(temp, "histplot.png"))
+        plt.savefig(os.path.join(temp, f"{self.model.name}_histplot.png"))
         plt.close()
 
 
         if not self.wait_for_train_end:
-            print("sendming e-mail...")
+            print("sending e-mail...")
             self.send_message()
 
     def on_test_begin(self, logs=None):
@@ -114,8 +115,8 @@ class EmailCallback(keras.callbacks.Callback):
 
         res = ""
         temp_dir = self.get_temp_dir()
-        modelplot_fn = os.path.join(temp_dir, "plot.png")
-        histplot_fn = os.path.join(temp_dir, "histplot.png")
+        modelplot_fn = os.path.join(temp_dir, f"{self.model.name}_plot.png")
+        histplot_fn = os.path.join(temp_dir, f"{self.model.name}_histplot.png")
         attachments = [histplot_fn, modelplot_fn] if os.path.exists(histplot_fn) else [modelplot_fn]
         keras.utils.plot_model(
             self.model, 
