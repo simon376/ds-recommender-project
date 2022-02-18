@@ -153,11 +153,11 @@ def send_hyperparameter_results_email(tuner, _to = None, ):
     import os
     import shutil
 
-    # Get the top model.
-    best_model= tuner.get_best_models()
     summary = None
     model_name = "unknown model"
     try:
+        # Get the top model.
+        best_model= tuner.get_best_models()
         # Build the model.
         # Needed for `Sequential` without specified `input_shape`.
         best_model.build(input_shape=(None, 28, 28))
@@ -171,10 +171,16 @@ def send_hyperparameter_results_email(tuner, _to = None, ):
     temp_dir = "./temp/"
     if not os.path.exists(temp_dir):
         os.mkdir(temp_dir)
-
-    contents = ("search results summary: \n " + tuner.results_summary())
+    contents = f"search space summary: {tuner.search_space_summary()}\n"
+    contents += f"search results summary: {tuner.results_summary()}\n "
     if summary is not None:
-        contents += ("best model: \n" + summary + "\n---\n")
+        contents += (f"best model: {summary}\n---\n")
+    try:
+        # Get the optimal hyperparameters
+        best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+        contents += f"very best hyperparameters: {best_hps}"
+    except:
+        pass
 
     res = yag.send(
         to=to, 
