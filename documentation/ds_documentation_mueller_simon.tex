@@ -1,8 +1,7 @@
-\documentclass[10pt,draft,journal,a4paper,oneside,twocolumn]{IEEEtran}
-\IEEEoverridecommandlockouts
-% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\documentclass[10pt,final,journal,a4paper,oneside,twocolumn]{IEEEtran}
 \usepackage{hyperref}
-\usepackage{cite}
+\usepackage[numbers]{natbib}
+\bibliographystyle{IEEEtran}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
 \usepackage{graphicx}
@@ -10,6 +9,8 @@
 \usepackage{xcolor}
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{comment}
+\usepackage{minted}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{todonotes}
@@ -26,13 +27,11 @@ simon.mueller3@hs-augsburg.de}}
 \maketitle
 
 \begin{abstract}
-This document is a model and instructions for \LaTeX.
-This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
-or Math in Paper Title or Abstract.
+In this paper, a deep learning based recommendation system for recommending books is presented. A Deep \& Cross Network architecture is used to predict a user's book rating which can then be used to rank recommended books. Extensive textual features about the items are included using word embeddings to increase the information available from which to infer the recommendations. Hyperparameter optimization is then carried out to find the best configuration for the model.
 \end{abstract}
 
 \begin{IEEEkeywords}
-component, formatting, style, styling, insert
+deep learning, recommendation, neural networks, recommender systems, deep \& cross network
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -65,8 +64,12 @@ Deep-Learning-based sytems try to combine these approaches while letting a deep 
 \todo{Einführung in RecSys - Collaborative vs Content-based Filtering, Matrix Factorization (ok das nicht). }
 \todo{seit allerneustem auch in pytorch}
 \section{related work}
-DLRM, DCN, NCF, DeepFM, ....
-same same, but different?
+The survey \cite{Zhang.2020} by \citeauthor{Zhang.2020} provides a very in-depth review of current deep-learning-based recommender system approaches using all kinds of deep learning algorithms and network structures from CNNs, GRUs, Deep Factorization Machines, to Reinforcement-Learning- and Attention-based systems.
+
+For this work, the Deep \& Cross Network \cite{Wang.2017} \cite{Wang.2021} developed by Researchers at Google was used. This network was mainly chosen because of an existing tutorial and basic sample implementation in the Tensorflow framework.
+Initially, a comparison between different recommendation architectures like Neural Collaborative Filtering \cite{He.2017}, developed at the University of Singapore, Wide \& Deep learning \cite{Cheng.2016} by Google and DLRM \cite{Naumov.31.05.2019} by Facebook researchers, was planned. Unfortunately finding running implementations in the current Tensorflow version 2 and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea was abandoned in the end.
+\todo{das genutzte DCN bisschen vorstellen}
+
 \section{research question}
 naja.. gibts ned. will halt bekannten algorithmus auf neuen Datensatz anwenden.. und mehrere vergleichen
 Ziel: Einfluss von side features (text) auf recommendations, statt nur interactions
@@ -74,77 +77,172 @@ Ziel: Einfluss von side features (text) auf recommendations, statt nur interacti
 ...
 auswahl des models / der models
 \section{realisation/evaluation}
-Tensorflow was used as the machine learning framework to implement both the data processing pipeline as well as the  
-deep learning recommendation system models.
+The implementation and initial training of the deep learning based recommender system presented in this work was carried out on a local machine running Windows 11 and was later moved to a more performant Unix-based machine hosted by the University of Applied Sciences Augsburg, its "daenerys" server.
+The programming was done in python, the most commonly used programming language in this field. For data preprocessing and cleaning, the \emph{pandas} library was used.
+\emph{Tensorflow} was used as the machine learning framework to implement both the data processing pipeline as well as the deep learning recommendation system models.
 
-etl pipeline
 
-\section{conclustion/outlook}
 \section{data set}
-The data set used for this work, is the UCSD Book Graph \cite{todo}, created by *authors* of the University of California, San Diego (UCSD). The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
+The data set used for this work, is the \emph{"UCSD Book Graph"} \cite{Wan.2018}~\cite{Wan.2019}, created by \citeauthor{Wan.2018} of the University of California, San Diego (UCSD). The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
 \todo{was ist goodreads, was sind shelves / interactions}
 Because of the sheer scale of the data set, the authors recommend using only a subset of the data, especially when used on a local machine. For this, they have created subsets for different genres, like "Children", "History \& Biography" or "Mystery, Thriller \& Crime". These categorizations may not be perfect and may overlap, since a genre specification is not directly available in the book metadata, but is instead inferred from the shelves users have put the books on.
-\paragraph{Books}
-The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date and a description text.
-The available columns are shown in \autoref{fig:book_cols}. 
-\begin{figure}[h]
-    \centering
-    \missingfigure{tabelle book columns}
-    \caption{Some caption}
-    \label{fig:book_cols}
-\end{figure}
-
-\begin{table}
-    
-    \begin{tabular}{clll}
-        \toprule
-    \# & Column & Non-Null Count & Dtype \\
-    \midrule
-    0 & title & 219235 non-null & string \\
-    1 & text\_reviews\_count & 219235 non-null & uint32 \\
-    2 & average\_rating & 219235 non-null & float64 \\
-    3 & description & 198488 non-null & string \\
-    4 & author\_id & 219235 non-null & int64 \\
-    \bottomrule
-\end{tabular}
+\subsection{Books}
+The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date and a description text. The available columns are shown in \autoref{tab:book_cols}. As shown in the table, a textual description string is not available for all datapoints.
+\begin{table}[h]        
+    \begin{center}
+        \begin{tabular}{clll}
+            \toprule
+            \# & Column & Non-Null Count & Dtype \\
+            \midrule
+            0 & title & 219235 non-null & string \\
+            1 & text\_reviews\_count & 219235 non-null & uint32 \\
+            2 & average\_rating & 219235 non-null & float64 \\
+            3 & description & 198488 non-null & string \\
+            4 & author\_id & 219235 non-null & int64 \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+\caption{available columns from the "Mystery, Thriller \&Crime" books data subset}
+\label{tab:book_cols}
 \end{table}
     
 
-\paragraph{Shelves}
+\subsection{Shelves}
 Users of the goodreads website may categorize their books into different shelves. Some of them may be exclusive. The most prominent shelves are the three pre-defined shelves "to-read", "read", and "want-to-read". On top of that, users may add as many shelves as they like and place books into one or more of them to keep track of their book collection.
 The shelf-interaction dataset may be used as implicit feedback, as described in \autoref{stateoftheart}. As stated previously, the dataset is very large and sparse. A user having shelfed a book does not necessarily imply strong interest in the book, but it is in indicator. 
 The data consists of mappings between user ID and book ID, with additional indicators if the book has been read (inferred from the existence of the book in the "read" shelf), the user's rating if available and if the user created a review on it. These additional indicators may be used as explicit feedback.
 A more detailed data set adds time information to this, recording when the user has started and finished the book. The authors of the dataset themselves have used this data to create a recommender system using time series data \cite{Pera.2018}.
 
-\paragraph{Reviews}
+\subsection{Reviews}
 On top of the book metadata and basic user interactions with these books, textual reviews have been scraped. The complete dataset contains multilingual review text without spoiler tags. It contains more than 15M reviews about ~2M books and 465K users. Users of the website can add spoiler tags to hide sensitive plot information from other readers, these tags have been removed in the dataset. This data was used to train a neural network to autonomously detect spoilers in text data \cite{Wan.2019}.
 
-The columns of this data are shown in \autoref{fig:review_cols}
-\input{review_table.tex}
+The columns of this data are shown in \autoref{tab:review_cols}. It should be noted, that only about 40 percent of the available 1.3 million review text datapoints was used to limit the performance impact and training times for training models on such large scale data.
+\todo{das ist der output, input ist viel mehr..}
+\begin{table}[h]
+\begin{center}
+        \begin{tabular}{clll}
+            \toprule
+            \# & Column & Non-Null Count & Dtype \\
+            \midrule
+            0 & user\_id & 735000 non-null & object \\
+            1 & book\_id & 735000 non-null & uint32 \\
+            2 & rating & 735000 non-null & uint8 \\
+            3 & review\_text & 734832 non-null & string \\
+            \bottomrule
+            \end{tabular}        
+            \caption{available columns from the "Mystery, Thriller \&Crime" review data subset}
+            \label{tab:review_cols}
+    
+\end{center}\end{table}
+% \input{review_table.tex}
 
-\begin{figure}[h]
-    \centering
-    \missingfigure{tabelle book columns}
-    \caption{Some caption}
-    \label{fig:review_cols}
-\end{figure}
 wer hats gemacht, was ist enthalten, wie kodiert
 explicit feedback: ratings
 less explicit feedback: interactions
 side features: review texts, descriptions, etc.
+\subsection{authors}
+not used, unnecessary.
 
-\paragraph{Data used in this work}
+\subsection{Data used in this work}
 As described in the preceding paragraphs, the provided dataset is of an industrial scale. To explore the data and train neural networks in a reasonable time, only a subset of data is used.
 The "Mystery, Thriller \& Crime" subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used \todo{warum}.
 
-\subsection{Data Processing}
-The selected data needs to be prprocessed to be used in a deep learning framework.
+\begin{table}[h]
+\begin{center}
+        \begin{tabular}{clll}
+        \toprule
+        \# & Column & Non-Null Count & Dtype \\
+        \midrule
+        0 & user\_id & 703594 non-null & object \\
+        1 & book\_id & 703594 non-null & uint32 \\
+        2 & rating & 703594 non-null & uint8 \\
+        3 & review\_text & 703594 non-null & string \\
+        4 & title & 703594 non-null & string \\
+        5 & text\_reviews\_count & 703594 non-null & uint32 \\
+        6 & average\_rating & 703594 non-null & float64 \\
+        7 & description & 703594 non-null & string \\
+        8 & author\_id & 703594 non-null & int64 \\
+        \bottomrule
+        \end{tabular}
+        \caption{combined dataset used}
+        \label{tab:all_data}
+    
+\end{center}\end{table}
+    \todo{im appendix beispielinhalt zeigen}
+\section{Data Processing}
+\subsection{Data Download and JSON Processing}
+The selected data needs to be preprocessed to be used in a deep learning framework.
 
-\subsubsection{Data Download and JSON Processing}
 * download from gdrive
 * json to csv
+\begin{listing}[h]
+    \begin{minted}[breaklines,fontsize=\footnotesize]{json}
+    {'user_id': '8842281e1d1347389f2ab93d60773d4d',                 
+    'book_id': '25735618',                                         
+    'review_id': 'ea74f2b6645b7d16f3ede2aca10226f0',               
+    'is_read': True,                                               
+    'rating': 0,                                                   
+    'date_added': 'Fri Aug 25 13:55:10 -0700 2017',                
+    'date_updated': 'Tue Oct 17 23:53:44 -0700 2017',              
+    'read_at': '',                                                 
+    'started_at': 'Tue Oct 17 09:23:10 -0700 2017'}
+    \end{minted}
+\end{listing}
+\subsection{data preprocessing/cleaning in pandas}
+As part of the data cleaning process, the pandas columns where cleaned "on the fly" while converting the JSON data into CSV. First, the review id and book id respectively are used as the table indices. For the book information, only five of the total \todo{X} columns are used. For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using all-encompassing "object" type), escaped  characters in longer texts are replaced by empty spaces.
+The two separate DataFrames are finally merged into one based on their common book IDs. Rows which contain empty column values or NaN data are dropped, which leads to the final dataset size as shown in \autoref{tab:all_data}.
 
-\subsubsection{data preprocessing/cleaning in pandas}
+The data preparation process is shown in \autoref{lst:data_prep}
+
+\begin{listing}[h]
+    
+    \begin{minted}[breaklines,fontsize=\footnotesize]{python}
+def prepare_book_df(df):
+    df.set_index("book_id", inplace=True)
+    df.loc[:,'author_id'] = df['authors'].apply(lambda row: row[0]['author_id']) # just select the first author_id of the list of authors
+    df.loc[:, 'author_id'] = df['author_id'].astype('int64')
+    df = df.loc[:, ['title', 'text_reviews_count', 'average_rating', 'description', 'author_id']]
+    df.loc[:,'title'] = df['title'].str.encode('utf-8')
+    df.loc[:,'description'] = df['description'].replace(r'\n',' ', regex=True) 
+    return df
+
+# write first chunk with header
+with open(os.path.join(OUT_DIR, "books.csv"), 'a') as f:
+    chunk = next(book_reader)
+    chunk = prepare_book_df(chunk)
+    chunk.to_csv(f, header=True, line_terminator='\n')  
+# process the rest of the data
+with open(os.path.join(OUT_DIR, "books.csv"), 'a') as f:
+    no_lines = 219235
+    for chunk in tqdm(book_reader, total=no_lines/chunk_size):
+        chunk = prepare_book_df(chunk)
+        chunk.to_csv(f, header=False, line_terminator='\n')
+
+# (...) repeat similarly for review data
+
+book_dtype={
+    "title": 'string', 
+    "description": 'string', 
+    "text_reviews_count": 'uint', 
+    'average_rating': 'float'
+}
+review_dtype = {
+'book_id': 'uint32',
+'rating': 'uint8',
+'review_text': 'string',
+}
+
+df_books = pd.read_csv(os.path.join(DIR, csv_fn_books), dtype=book_dtype, low_memory=True)
+df_books.title = df_books.title.str.strip("b\'\"") 
+df_reviews = pd.read_csv(os.path.join(DIR, csv_fn_reviews), dtype=review_dtype, low_memory=True)
+
+df_join = pd.merge(df_reviews, df_books, left_on="book_id", right_index=True)
+df_join.dropna(inplace=True)
+    \end{minted}
+\caption{Data cleaning process for converting JSON to CSV, cleaning columns and merging the dataframes.}
+\label{lst:data_prep}
+\end{listing}
+
 * drop columns
 * rename columns
 * convert dtypes
@@ -155,15 +253,15 @@ The selected data needs to be prprocessed to be used in a deep learning framewor
 * train test validation split (warum alle 3?)
 * ttv size, batching, ...
 
-\subsubsection{Feature Processing}
+\subsection{Feature Processing}
 data of different types:
 * continous numeric (review count, avg rating)
 * discrete (alpha)numeric (book/author/user ids)
 * diverse text features: (review text, title, description)
 
-\paragraph{Encoding}
+\subsubsection{Encoding}
 Strings \& Integers Encoded (mapped) using String/IntegerLookup 
-\paragraph{Embeddings}
+\subsubsection{Embeddings}
 learning dense float (?) embeddings from those string / integer lookup tables
 
 for non-discrete text data, preprocess the data usign TExtVectorization: split , lowercase, etc. then learn the embeddings.
@@ -183,17 +281,27 @@ tfrs ranking task
 (Table: keras -> parameters -> to df -> to latex)
 
 
-\section{Results}
+\section{Results / Hyperparameter tuning}
 plots vom hyperparamtuning, resultate, evtl. beispiel.
+
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{successive_halving}
+    \caption{Illustration of successive halving for eight configurations. On each iteration, half of the algorithms are dropped while the resource budget for the remaining algorithms is doubled~\cite{Feurer.2019}.}
+    \label{fig:succ_halving}
+\end{figure}
 
 mit/ohne Cross layers
 mit/ohne text data ( :( )
 
 Embedding Visualization?
 
+\section{conclustion/outlook}
 Appendix: EmailCallback
 
-
+\begin{comment}
+    
 \subsection{Maintaining the Integrity of the Specifications}
 
 The IEEEtran class file is used to format your paper and style the text. All margins, 
@@ -393,19 +501,17 @@ element symbols.
 
 For papers published in translation journals, please give the English 
 citation first, followed by the original foreign-language citation \cite{b6}.
+\end{comment}
+\bibliography{bibliography}
 
-\begin{thebibliography}{00}
-\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
-\bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
-\bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
-\bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
-\bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
-\bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
-\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
-\bibitem{todo} TODO ADD CITATION, Nowhere, 2022
-\end{thebibliography}
-\vspace{12pt}
-\color{red}
-IEEE conference templates contain guidance text for composing and formatting conference papers. Please ensure that all template text is removed from your conference paper prior to submission to the conference. Failure to remove the template text from your paper may result in your paper not being published.
-
+% \begin{thebibliography}{00}
+% \bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
+% \bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
+% \bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
+% \bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
+% \bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
+% \bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
+% \bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
+% \bibitem{todo} TODO ADD CITATION, Nowhere, 2022
+% \end{thebibliography}
 \end{document}
