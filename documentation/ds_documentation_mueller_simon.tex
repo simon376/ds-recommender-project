@@ -11,6 +11,7 @@
 \usepackage{booktabs}
 \usepackage{comment}
 \usepackage{minted}
+\providecommand*{\listingautorefname}{Listing}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{todonotes}
@@ -85,7 +86,7 @@ The programming was done in python, the most commonly used programming language 
 \section{data set}
 The data set used for this work, is the \emph{"UCSD Book Graph"} \cite{Wan.2018}~\cite{Wan.2019}, created by \citeauthor{Wan.2018} of the University of California, San Diego (UCSD). The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
 \todo{was ist goodreads, was sind shelves / interactions}
-Because of the sheer scale of the data set, the authors recommend using only a subset of the data, especially when used on a local machine. For this, they have created subsets for different genres, like "Children", "History \& Biography" or "Mystery, Thriller \& Crime". These categorizations may not be perfect and may overlap, since a genre specification is not directly available in the book metadata, but is instead inferred from the shelves users have put the books on.
+Because of the sheer scale of the data set, the authors recommend using only a subset of the data, especially when used on a local machine. For this, they have created subsets for different genres, like \emph{"Children"}, \emph{"History \& Biography"} or \emph{"Mystery, Thriller \& Crime"}. These categorizations may not be perfect and may overlap, since a genre specification is not directly available in the book metadata, but is instead inferred from the shelves users have put the books on.
 \subsection{Books}
 The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date and a description text. The available columns are shown in \autoref{tab:book_cols}. As shown in the table, a textual description string is not available for all datapoints.
 \begin{table}[h]        
@@ -102,7 +103,7 @@ The book data set contains 2.36 million entries, including information like a un
             \bottomrule
         \end{tabular}
     \end{center}
-\caption{available columns from the "Mystery, Thriller \&Crime" books data subset}
+\caption{available columns from the \emph{Mystery, Thriller \&Crime} books data subset}
 \label{tab:book_cols}
 \end{table}
     
@@ -130,7 +131,7 @@ The columns of this data are shown in \autoref{tab:review_cols}. It should be no
             3 & review\_text & 734832 non-null & string \\
             \bottomrule
             \end{tabular}        
-            \caption{available columns from the "Mystery, Thriller \&Crime" review data subset}
+            \caption{available columns from the \emph{Mystery, Thriller \&Crime} review data subset}
             \label{tab:review_cols}
     
 \end{center}\end{table}
@@ -145,7 +146,7 @@ not used, unnecessary.
 
 \subsection{Data used in this work}
 As described in the preceding paragraphs, the provided dataset is of an industrial scale. To explore the data and train neural networks in a reasonable time, only a subset of data is used.
-The "Mystery, Thriller \& Crime" subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used \todo{warum}.
+The \emph{Mystery, Thriller \&Crime} subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used \todo{warum}.
 
 \begin{table}[h]
 \begin{center}
@@ -175,28 +176,24 @@ The selected data needs to be preprocessed to be used in a deep learning framewo
 
 * download from gdrive
 * json to csv
-\begin{listing}[h]
-    \begin{minted}[breaklines,fontsize=\footnotesize]{json}
-    {'user_id': '8842281e1d1347389f2ab93d60773d4d',                 
-    'book_id': '25735618',                                         
-    'review_id': 'ea74f2b6645b7d16f3ede2aca10226f0',               
-    'is_read': True,                                               
-    'rating': 0,                                                   
-    'date_added': 'Fri Aug 25 13:55:10 -0700 2017',                
-    'date_updated': 'Tue Oct 17 23:53:44 -0700 2017',              
-    'read_at': '',                                                 
-    'started_at': 'Tue Oct 17 09:23:10 -0700 2017'}
-    \end{minted}
-\end{listing}
+
 \subsection{data preprocessing/cleaning in pandas}
-As part of the data cleaning process, the pandas columns where cleaned "on the fly" while converting the JSON data into CSV. First, the review id and book id respectively are used as the table indices. For the book information, only five of the total \todo{X} columns are used. For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using all-encompassing "object" type), escaped  characters in longer texts are replaced by empty spaces.
+As part of the data cleaning process, the pandas columns where cleaned "on the fly" while converting the JSON data into CSV. First, the review id and book id respectively are used as the table indices. For the book information, only five of the total \todo{X} columns are used. Temporal information, like \mintinline{python}{date_added, read_at}, is removed from the review dataset, since taking this information would necessitate a different, sequential model architecture with some kind of recurrence.
+For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using all-encompassing "object" type), escaped  characters in longer texts are replaced by empty spaces.
 The two separate DataFrames are finally merged into one based on their common book IDs. Rows which contain empty column values or NaN data are dropped, which leads to the final dataset size as shown in \autoref{tab:all_data}.
 
-The data preparation process is shown in \autoref{lst:data_prep}
+An excerpt of the data preparation process is shown in \autoref{lst:data_prep}.
 
 \begin{listing}[h]
-    
     \begin{minted}[breaklines,fontsize=\footnotesize]{python}
+chunk_size = 500
+book_reader = pd.read_json(os.path.join(DIR, in_fn_books), lines=True, dtype={
+    "title": 'string', 
+    "description": 'string', 
+    "text_reviews_count": 'uint', 
+    'average_rating': 'float'
+}, chunksize=chunk_size)
+
 def prepare_book_df(df):
     df.set_index("book_id", inplace=True)
     df.loc[:,'author_id'] = df['authors'].apply(lambda row: row[0]['author_id']) # just select the first author_id of the list of authors
@@ -243,30 +240,52 @@ df_join.dropna(inplace=True)
 \label{lst:data_prep}
 \end{listing}
 
-* drop columns
-* rename columns
-* convert dtypes
-* only using subset of datapoints: ~ 1 mio entries in total, X unique books, Y unique users
+% * drop columns
+% * rename columns
+% * convert dtypes
+% * only using subset of datapoints: ~ 1 mio entries in total, X unique books, Y unique users
+% * merge dataset into one dataframe
 
-* merge dataset into one dataframe
+For further processing, the data is from now on split into three disjoint \emph{train, test and validation splits} with a ratio of 70/15/15 percent.
+This "loss" of thirty percent of the possible training data is of no major concern in this application, since the available data is of such grand scale.
+The training dataset is used to train the neural network, to optimize the weights of the nodes in the network using a backpropagation algorithm to minimize the training loss function for every training batch. The validation set is used to monitor the training progress on previously unseen data to assess the generalization ability of the trained network weights. Common training callbacks, like early stopping of the training on stagnant loss improvements, or adaptive learning rate scheduling may use the validation loss metric. Finally, the test subset will be used to judge the final optimized model(s) after training has finished and hyperparameter tuning has been carried out. This three-fold split is used, because the validation dataset implicitly influences the created end-model since hyperparameters will be chosen to improve the performance based on the validation loss. A separate test dataset on the other hand can be used as an unbiased estimator of the performance.
 
+For higher training performance, the pandas tables (so called \mintinline{python}{DataFrames}) are converted to \mintinline{python}{TensorFlow Datasets} using the \mintinline{python}{tf.data} interface. The tf.data pipeline is optimized for high performance and allows easy usage of batch sizes, shuffling, caching and prefetching of data\footnotemark.
+\footnotetext{see \url{https://www.tensorflow.org/guide/data_performance} for an overview of the possible performance improvements by parallelization.}
 * train test validation split (warum alle 3?)
 * ttv size, batching, ...
 
 \subsection{Feature Processing}
+The data used for training consists of many different data types and for the network to properly utilize this information, dense features have to be encoded from the raw data. The Keras preprocessing API is used to build native input processing pipelines\footnotemark. These pipelines may either be built as part of a separate input processing task, or directly into the neural network models. In the final implementation, on which the results are reported, the latter was the case.
+
+\footnotetext{see \url{https://www.tensorflow.org/guide/keras/preprocessing_layers} for an overview of the Tensorflow implementation of the Keras input preprocessing layers}
+
+\paragraph{Continuous numerical features}
+The "review count" and "average rating" columns are continuous numerical features. The number of reviews has a lower bound of zero with an possibly unknown upper bound - the bounds are known for the training data, but the model may come upon larger numbers in testing and production. The average rating is a continuous number between 0 and 5, which is the maximum rating on the goodreads platform. Since both those features lie on very different scales, which artificial neural networks often are sensitive to, \emph{Normalization} is used to shift and scale the inputs to a distribution centered around 0 with standard deviation 1.
+
+\paragraph{Discrete (alpha)numerical features}
+The identifiers of books, authors and users are either numerical or alphanumerical categorical values. Since the ids may be generated randomly and the available data is a randomly scraped subset of all ids, using this data raw or one-hot-encoded would lead to very sparse matrices. That's why \emph{IntegerLookup} layers are employed to map these categorical integers to continuous ranges. The layer learns a vocabulary table, adapted from the available input data, and represents the identifiers using an integer index into this dense vocabulary. 
+The \emph{StringLookup} layers translate strings into integers in the same fashion. Each unique raw string input leads to an entry in a (possibly fixed size) vocabulary, into which the processed data will be mapped by an integer index.
 data of different types:
-* continous numeric (review count, avg rating)
-* discrete (alpha)numeric (book/author/user ids)
-* diverse text features: (review text, title, description)
 
-\subsubsection{Encoding}
-Strings \& Integers Encoded (mapped) using String/IntegerLookup 
-\subsubsection{Embeddings}
-learning dense float (?) embeddings from those string / integer lookup tables
+\paragraph{Complex text features}
+While ids may be seen as distinct categorical features, longer passages of text are more complex, since they consist of arrays of strings (words). These include the review texts, book titles and description texts. To process this data, a \emph{TextVectorization} preprocessing layer is used, which processes the data in five steps:
+\begin{enumerate}
+    \item Standardization
+    \item Splitting
+    \item Recombination
+    \item Indexing
+    \item Transformation
+\end{enumerate}
+First each input data sample is standardized, by lowercasing the text and stripping any punctuation marks from it. Secondly, the data is separated into words. These are then recombined into "ngram" tokens, which represent consecutive word order representations, which are indexed by assigning each "ngram" a unique integer value. Finally, each sample is transformed using this index into a vector of integers.
+This output vector may be truncated or padded to a fixed length if desired.
+With this process, a arbitrarily long text can be represented using an array of integers.
 
-for non-discrete text data, preprocess the data usign TExtVectorization: split , lowercase, etc. then learn the embeddings.
+\paragraph{Embeddings}
+All of these encoded features are each finally passed into a \emph{Embedding} layer. 
+Embedding layers transform integer indices into dense vector representations of fixed size. These embeddings reduce the dimensionality of the input data to a fixed embedding dimension, while trying to encode the input data in a way that retains important aspects of the data. For word embeddings, this means that words with similar meanings are closer together in the vector space representation than unrelated words.
 
-normalize numeric data (review categorizes don't occur the same)
+
 
 \section{Neural Network Model}
 only one model in different configurations used: Deep\&Cross Network.
@@ -282,8 +301,15 @@ tfrs ranking task
 
 
 \section{Results / Hyperparameter tuning}
-plots vom hyperparamtuning, resultate, evtl. beispiel.
+Because the performance of machine learning systems heavily depends not only on the base architectures used, but also on their parametrization, hyperparameter tuning is used to optimize these parameters. Because of the large number of parameters and their possible parametrizations, the space of possible parameter combinations to be explored grows exponentially large. To handle this problem, automated search algorithms are used to heuristically get to a good, even if possibly not perfect configuration, using a reasonable amount of time and resources.
 
+\cite{Feurer.2019} gives a broad overview on the different kinds of hyperparameter optimization techniques. In this work, the HyperBand \cite{li2017hyperband} is used to optimize the hyperparameters. The algorithm is based on a successive halfing approach, as shown in \autoref{fig:succ_halving}.
+The training starts with $n$ different configurations, using $b=\frac{1}{n}$ of the available resources. After this training step, the configuration pool is halved, keeping only the best $n' = n/2$ configurations. At the same time, the resource budget for the remaining configurations is effectively doubled $b=\frac{1}{n'}=\frac{1}{\frac{n}{2}} = 2\times\frac{1}{n}$.
+This proceses is repeated until a single best algorithm is left. Hyperband improves on this basic successive halfing strategy by not only randomly sampling the available configurations in the parameter space but also the budgets assigned to the selected configurations. In practice, HyperBand has shown to increased performance with only a relatively small increase in computation time~\cite[p. 17]{Feurer.2019}.
+
+Hyperparameters are   
+plots vom hyperparamtuning, resultate, evtl. beispiel.
+\todo{gesammtes Parametergrid siehe Appendix}
 
 \begin{figure}[ht]
     \centering
