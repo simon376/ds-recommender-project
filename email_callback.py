@@ -144,7 +144,7 @@ class EmailCallback(keras.callbacks.Callback):
         return summary_string
 
 
-def send_hyperparameter_results_email(tuner, _to = None, ):
+def send_hyperparameter_results_email(tuner, best_model, _to = None, ):
     import credentials
     yag = yagmail.SMTP(credentials.username, credentials.app_password)
     to = _to if _to is not None else credentials.username
@@ -152,16 +152,17 @@ def send_hyperparameter_results_email(tuner, _to = None, ):
     date = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     import os
     import shutil
+    import io
+    from contextlib import redirect_stdout
+
 
     summary = None
     model_name = "unknown model"
     try:
-        # Get the top model.
-        best_model= tuner.get_best_models()
-        # Build the model.
-        # Needed for `Sequential` without specified `input_shape`.
-        best_model.build(input_shape=(None, 28, 28))
-        summary = best_model.summary()
+        f = io.StringIO() 
+        with redirect_stdout(f):
+            best_model.summary() 
+        summary = f.getvalue()
         model_name = best_model.name
     except:
         pass
@@ -171,14 +172,23 @@ def send_hyperparameter_results_email(tuner, _to = None, ):
     temp_dir = "./temp/"
     if not os.path.exists(temp_dir):
         os.mkdir(temp_dir)
-    contents = f"search space summary: {tuner.search_space_summary()}\n"
-    contents += f"search results summary: {tuner.results_summary()}\n "
+    f = io.StringIO() 
+    with redirect_stdout(f):
+        tuner.search_space_summary() 
+    search_space = f.getvalue()
+    f = io.StringIO() 
+    with redirect_stdout(f):
+        tuner.results_summary() 
+    results = f.getvalue()
+
+    contents = f"search space summary: {search_space}\n"
+    contents += f"search results summary: {results}\n "
     if summary is not None:
         contents += (f"best model: {summary}\n---\n")
     try:
         # Get the optimal hyperparameters
         best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
-        contents += f"very best hyperparameters: {best_hps}"
+        contents += f"very best hyperparameters: {best_hps.values}"
     except:
         pass
 
