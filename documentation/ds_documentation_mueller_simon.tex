@@ -11,6 +11,8 @@
 \usepackage{booktabs}
 \usepackage{comment}
 \usepackage{minted}
+\usepackage{xurl}
+
 \providecommand*{\listingautorefname}{Listing}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
@@ -28,7 +30,7 @@ simon.mueller3@hs-augsburg.de}}
 \maketitle
 
 \begin{abstract}
-In this paper, a deep learning based recommendation system for recommending books is presented. A Deep \& Cross Network architecture is used to predict a user's book rating which can then be used to rank recommended books. Extensive textual features about the items are included using word embeddings to increase the information available from which to infer the recommendations. Hyperparameter optimization is then carried out to find the best configuration for the model.
+In this paper, a deep-learning-based recommendation system for recommending books is presented. A Deep \& Cross Network architecture is used to predict a user's book rating which can then be used to rank recommended books. Extensive textual features about the items are included using word embeddings to increase the information available from which to infer the recommendations. Hyperparameter optimization is then carried out to find the best configuration for the model.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -42,50 +44,80 @@ Recommendation systems are used especially in the advertising and sales business
 
 For all of these examples, the users of the respective platforms and services have to be recommended the most appropriate products, pieces of content, or advertisements to keep the user's interest in the service. This task is the goal of the recommender or recommendation systems, which will be explored in this paper on a concrete data set.
 
-\section{state of the art}
+\section{state of the art}\label{sec:stateoftheart}
 As described in the Introduction, most interest in the topic arises in the advertisement and sales business, which is why a lot of research is being done by the research departments of Google/Alphabet, Meta (formerly Facebook), Microsoft, and Amazon.
 
 In the following section, a general ontology of recommendation systems will be presented.
-There are two main types of recommendation methods, content-based and Collaborative filtering. They differ in their main goals and the data available. 
+There are two main types of classic recommendation methods, Content-based Filtering and Collaborative Filtering. They differ in their main goals and the data available. 
 Collaborative Filtering on one hand tries not to perfectly know the specific item the targeted user may be most interested in but instead tries to best categorize the user base into different groups with similar interests. This is done because users with similar general interests generally respond the same to specific recommended items, and often a "perfect fit" is unnecessary or virtually impossible to achieve because of the sparsity of the available data.
-Collaborative Filtering methods are especially useful for predicting click-through rates for advertisements, because in this context, usually only implicit feedback is available. Implicit feedback is feedback data tracked by cookies with only relatively insignificant correlations. A click on a search result, on an item on a shopping website, a like to a social media post are considered implicit feedback.  When the data consists of millions of these small interactions, this impliicit feedback may be used to give explicit recommendations. For this approach, a huge data set is needed, since a single click is of little value, since i.e. it may be a misclick without any relevance to the user. Implicit feedback dataset matrices usually consists of thousands of features, which are occupied only very sparsely.
+Collaborative Filtering methods are especially useful for predicting click-through rates for advertisements, because in this context, usually, only implicit feedback is available. Implicit feedback is feedback data tracked by cookies with only relatively insignificant correlations. A click on a search result or an item on a shopping website, or a like on a social media post are considered implicit feedback.  When the data consists of millions of these small interactions, this implicit feedback may be used to give explicit recommendations. For this approach, a huge data set is needed, since a single click is of little value, because i.e. it may be a misclick without any relevance to the user. Implicit feedback dataset matrices usually consist of thousands of features, which are occupied only very sparsely.
 
 \todo{und wie wird das berechnet? formel}
 
 
-Content-based filtering on the other hand instead tries to achieve the opposite. These algorithms take as much information available about the items (the content) as possible to predict the interest of a user for it, or the likelihood of an interaction respectively. These approaches usually rely on explicit feedback by the users, which make predictions more predictable. They are used in domains like streaming services, where for example the service provider can estimate the user liked a movie if he watched in completely, and especially if the user gives an explicit item rating, usually on a 1-5 stars or at least a like/dislike basis.
+Content-based filtering on the other hand instead tries to achieve the opposite. These algorithms take as much information available about the items (the content) as possible to predict the interest of a user for it, or the likelihood of an interaction respectively. These approaches usually rely on explicit feedback by the users, which makes predictions more predictable. They are used in domains like streaming services, where for example the service provider can estimate if the user liked a movie if he watched it completely, and especially if the user gives an explicit item rating, usually on a 1-5 stars or at least a like/dislike basis.
 
 \todo{berechnung}
 % matrix factorization
 
-A basic approach to predict these likelihoods is to estimate a user-item-matrix, with each unique user as a row and all the available items as columns, where the matrix cells [i,j] are filled with a calculated probability of interaction or of the predicated rating / interest. 
+A basic approach to predict these likelihoods is to estimate a user-item matrix, with each unique user as a row and all the available items as columns, where the matrix cells [i,j] are filled with a calculated probability of interaction or the predicated rating or similar interest indicator. 
 
-Deep-Learning-based sytems try to combine these approaches while letting a deep neural network architecture take care of the feature selection to gain the best recommendations.
+Deep-Learning-based systems try to combine these approaches while letting a deep neural network architecture take care of the feature selection to gain the best recommendations.
 
 \todo{Einführung in RecSys - Collaborative vs Content-based Filtering, Matrix Factorization (ok das nicht). }
 \todo{seit allerneustem auch in pytorch}
 \section{related work}
-The survey \cite{Zhang.2020} by \citeauthor{Zhang.2020} provides a very in-depth review of current deep-learning-based recommender system approaches using all kinds of deep learning algorithms and network structures from CNNs, GRUs, Deep Factorization Machines, to Reinforcement-Learning- and Attention-based systems.
+The survey \cite{Zhang.2020} provides a very in-depth review of current deep-learning-based recommender system approaches using all kinds of deep learning algorithms and network structures from CNNs, GRUs, Deep Factorization Machines, to Reinforcement-Learning- and Attention-based systems.
 
-For this work, the Deep \& Cross Network \cite{Wang.2017} \cite{Wang.2021} developed by Researchers at Google was used. This network was mainly chosen because of an existing tutorial and basic sample implementation in the Tensorflow framework.
-Initially, a comparison between different recommendation architectures like Neural Collaborative Filtering \cite{He.2017}, developed at the University of Singapore, Wide \& Deep learning \cite{Cheng.2016} by Google and DLRM \cite{Naumov.31.05.2019} by Facebook researchers, was planned. Unfortunately finding running implementations in the current Tensorflow version 2 and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea was abandoned in the end.
-\todo{das genutzte DCN bisschen vorstellen}
+For this work, the Deep \& Cross Network \cite{Wang.2017} \cite{Wang.2021} developed by researchers at Google was used. This network was mainly chosen because of an existing tutorial and basic sample implementation in the Tensorflow framework.
+Initially, a comparison between different recommendation architectures like Neural Collaborative Filtering \cite{He.2017}, developed at the University of Singapore, Wide \& Deep learning \cite{Cheng.2016} by Google and DLRM \cite{Naumov.31.05.2019} by Facebook researchers, was planned. Unfortunately finding running implementations in the current Tensorflow version 2, using similar programming interfaces (since Tensorflow provides a few different ways to provide data and define models), and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea was abandoned in the end.
+
 
 \section{research question}
-naja.. gibts ned. will halt bekannten algorithmus auf neuen Datensatz anwenden.. und mehrere vergleichen
-Ziel: Einfluss von side features (text) auf recommendations, statt nur interactions
-\section{concept}
-...
-auswahl des models / der models
-\section{realisation/evaluation}
-The implementation and initial training of the deep learning based recommender system presented in this work was carried out on a local machine running Windows 11 and was later moved to a more performant Unix-based machine hosted by the University of Applied Sciences Augsburg, its "daenerys" server.
+The goal of this work was to develop a recommendation system to recommend books to users, based on the \emph{"UCSD~Book~Graph"} data set, which will be further introduced in \autoref{sec:data}. The main challenges were to decide which data to use, how to prepare it and feed it into the artificial neural network, and to find out which hyperparameter configuration and data features result in the best recommendation performance.
+An important part of this task was the inclusion of textual features of different lengths and complexity, which had to be preprocessed and embedded.
+
+
+\section{model architecture}\label{sec:model_arch}
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{dcn_architecture}
+    \caption{Visualization of two kinds of DCN-V2-architectures. $ \bigotimes $ represents the cross operation~\cite{Wang.2021}.}
+    \label{fig:dcn_arch}
+\end{figure}
+
+\autoref{fig:dcn_arch} shows two variants of the Deep \& Cross Network architecture as defined in \cite{Wang.2021}. For this paper, the "Stacked" approach was used.
+In both of them, the network consists of three parts. First, in the Embedding Layer, for sparse (categorical) features, dense embeddings are learned and then concatenated to dense (numerical) features to create the network input. These features are then fed into the cross sub-network, in which feature interactions using the cross layers are modeled. After passing through an activation layer, these crossed features are passed to the second, deep sub-network, in which deep dense layers are used. After a final activation function appropriate to the problem on hand (softmax for multi-class classification, linear for regression), the final output can be received from the model.
+
+The cross network applies feature crossing at each layer, with cross orders (polynomial degrees) increasing with layer depth. \autoref{fig:dcn_cross} shows the $ (i+1) $-th cross layer.
+$ x_{0} $ is the base layer (embedding layer), $ x_{i} $  is the input to the cross layer, $ \bigodot $ represents element-wise multiplications, and matrix $ W $ and vector $ b $ are the parameters to be learned.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{dcn_cross}
+    \caption{Cross layer visualization~\cite{Wang.2021}.}
+    \label{fig:dcn_cross}
+\end{figure}
+
+For a more detailed description of the model and the used cross layers, one may refer to the original papers or this simpler explanation in a TensorFlow Blog post~\cite{Wang.2020}.
+
+
+% \section{concept}
+
+% ...
+% auswahl des models / der models
+\section{technology stack}
+The implementation and initial training of the deep learning-based recommender system presented in this work was carried out on a local machine running Windows 11 and was later moved to a more performant Unix-based machine hosted by the University of Applied Sciences Augsburg, its "daenerys" server.
 The programming was done in python, the most commonly used programming language in this field. For data preprocessing and cleaning, the \emph{pandas} library was used.
-\emph{Tensorflow} was used as the machine learning framework to implement both the data processing pipeline as well as the deep learning recommendation system models.
+\emph{Tensorflow} was used as the machine learning framework to implement both the data processing pipeline as well as the deep learning recommendation system models. For the data input and processing pipeline, the \mintinline{python}{tf.data} TensorFlow interface was used.
 
 
-\section{data set}
-The data set used for this work, is the \emph{"UCSD Book Graph"} \cite{Wan.2018}~\cite{Wan.2019}, created by \citeauthor{Wan.2018} of the University of California, San Diego (UCSD). The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
-\todo{was ist goodreads, was sind shelves / interactions}
+\section{data set}\label{sec:data}
+The data set used for this work is the \emph{"UCSD~Book~Graph"}~\cite{Wan.2018}~\cite{Wan.2019}, created at the University of California, San Diego (UCSD).
+The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. Goodreads is a social media platform where users can create virtual bookshelves to show their collections, track their reading progress, discuss books in forums and create text reviews for the books they've read. Goodreads was launched in 2006 and has since been bought by Amazon in 2013. The platform has over 90 million users as of 2019.
+
+The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
 Because of the sheer scale of the data set, the authors recommend using only a subset of the data, especially when used on a local machine. For this, they have created subsets for different genres, like \emph{"Children"}, \emph{"History \& Biography"} or \emph{"Mystery, Thriller \& Crime"}. These categorizations may not be perfect and may overlap, since a genre specification is not directly available in the book metadata, but is instead inferred from the shelves users have put the books on.
 \subsection{Books}
 The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date and a description text. The available columns are shown in \autoref{tab:book_cols}. As shown in the table, a textual description string is not available for all datapoints.
@@ -109,13 +141,13 @@ The book data set contains 2.36 million entries, including information like a un
     
 
 \subsection{Shelves}
-Users of the goodreads website may categorize their books into different shelves. Some of them may be exclusive. The most prominent shelves are the three pre-defined shelves "to-read", "read", and "want-to-read". On top of that, users may add as many shelves as they like and place books into one or more of them to keep track of their book collection.
-The shelf-interaction dataset may be used as implicit feedback, as described in \autoref{stateoftheart}. As stated previously, the dataset is very large and sparse. A user having shelfed a book does not necessarily imply strong interest in the book, but it is in indicator. 
-The data consists of mappings between user ID and book ID, with additional indicators if the book has been read (inferred from the existence of the book in the "read" shelf), the user's rating if available and if the user created a review on it. These additional indicators may be used as explicit feedback.
+Users of the Goodreads website may categorize their books into different shelves. Some of them may be exclusive. The most prominent shelves are the three pre-defined shelves "to-read", "read", and "want-to-read". On top of that, users may add as many shelves as they like and place books into one or more of them to keep track of their book collection.
+The shelf-interaction dataset may be used as implicit feedback, as described in \autoref{sec:stateoftheart}. As stated previously, the dataset is very large and sparse. A user having shelved a book does not necessarily imply strong interest in the book, but it is an indicator. 
+The data consists of mappings between user ID and book ID, with additional indicators if the book has been read (inferred from the existence of the book on the "read" shelf), the user's rating if available, and if the user created a review on it. These additional indicators may be used as explicit feedback.
 A more detailed data set adds time information to this, recording when the user has started and finished the book. The authors of the dataset themselves have used this data to create a recommender system using time series data \cite{Pera.2018}.
 
 \subsection{Reviews}
-On top of the book metadata and basic user interactions with these books, textual reviews have been scraped. The complete dataset contains multilingual review text without spoiler tags. It contains more than 15M reviews about ~2M books and 465K users. Users of the website can add spoiler tags to hide sensitive plot information from other readers, these tags have been removed in the dataset. This data was used to train a neural network to autonomously detect spoilers in text data \cite{Wan.2019}.
+On top of the book metadata and basic user interactions with these books, textual reviews have been scraped. The complete dataset contains multilingual review text without spoiler tags. It contains more than 15M reviews about ~2M books and 465K users. Users of the website can add spoiler tags to hide sensitive plot information from other readers, these tags have been removed from the dataset. This data was used to train a neural network to autonomously detect spoilers in text data \cite{Wan.2019}.
 
 The columns of this data are shown in \autoref{tab:review_cols}. It should be noted, that only about 40 percent of the available 1.3 million review text datapoints was used to limit the performance impact and training times for training models on such large scale data.
 \todo{das ist der output, input ist viel mehr..}
@@ -135,54 +167,84 @@ The columns of this data are shown in \autoref{tab:review_cols}. It should be no
             \label{tab:review_cols}
     
 \end{center}\end{table}
-% \input{review_table.tex}
 
-wer hats gemacht, was ist enthalten, wie kodiert
-explicit feedback: ratings
-less explicit feedback: interactions
-side features: review texts, descriptions, etc.
 \subsection{authors}
-not used, unnecessary.
+There is a separate data set available for author information, e.g. their names, number of reviews to their books, and their average rating. This information was not used, since the author's id as a unique identifier was deemed as sufficient information, whereas specific book (item) features seemed to be of greater importance.
 
 \subsection{Data used in this work}
 As described in the preceding paragraphs, the provided dataset is of an industrial scale. To explore the data and train neural networks in a reasonable time, only a subset of data is used.
-The \emph{Mystery, Thriller \&Crime} subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used \todo{warum}.
+The \emph{Mystery, Thriller \&Crime} subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used, because the main point of interest in this work was to learn recommendations based on explicit content information, like the item descriptions, and not to imitate recommender systems used e.g. for ad-click-prediction using implicit interactions feedback.
 
 \begin{table}[h]
 \begin{center}
         \begin{tabular}{clll}
-        \toprule
-        \# & Column & Non-Null Count & Dtype \\
-        \midrule
-        0 & user\_id & 703594 non-null & object \\
-        1 & book\_id & 703594 non-null & uint32 \\
-        2 & rating & 703594 non-null & uint8 \\
-        3 & review\_text & 703594 non-null & string \\
-        4 & title & 703594 non-null & string \\
-        5 & text\_reviews\_count & 703594 non-null & uint32 \\
-        6 & average\_rating & 703594 non-null & float64 \\
-        7 & description & 703594 non-null & string \\
-        8 & author\_id & 703594 non-null & int64 \\
-        \bottomrule
-        \end{tabular}
+            \toprule
+            \# & Column & Non-Null Count & Dtype \\
+            \midrule
+            0 & user\_id & 981705 non-null & object \\
+            1 & book\_id & 981705 non-null & uint32 \\
+            2 & rating & 981705 non-null & uint8 \\
+            3 & review\_text & 981705 non-null & string \\
+            4 & title & 981705 non-null & string \\
+            5 & text\_reviews\_count & 981705 non-null & uint64 \\
+            6 & average\_rating & 981705 non-null & float64 \\
+            7 & description & 981705 non-null & string \\
+            8 & author\_id & 981705 non-null & int64 \\
+            \bottomrule
+                    \end{tabular}
         \caption{combined dataset used}
         \label{tab:all_data}
     
 \end{center}\end{table}
+\begin{comment}
+all data:
+2022-03-05 20:13:09,578 INFO     unique user_id: 93480
+2022-03-05 20:13:09,592 INFO     unique book_id: 152258
+2022-03-05 20:13:09,598 INFO     unique rating: 6
+2022-03-05 20:13:11,362 INFO     unique review_text: 956133
+2022-03-05 20:13:11,450 INFO     unique title: 99813
+2022-03-05 20:13:11,458 INFO     unique text_reviews_count: 1715
+2022-03-05 20:13:11,467 INFO     unique average_rating: 296
+2022-03-05 20:13:12,483 INFO     unique description: 123034
+2022-03-05 20:13:12,498 INFO     unique author_id: 25548
+\end{comment}
     \todo{im appendix beispielinhalt zeigen}
+\begin{comment}
+100k limit:
+2022-03-06 20:32:22,965 INFO     unique user_id: 40969
+2022-03-06 20:32:22,968 INFO     unique book_id: 691 (!)
+2022-03-06 20:32:22,971 INFO     unique rating: 6
+2022-03-06 20:32:23,199 INFO     unique review_text: 98499
+2022-03-06 20:32:23,207 INFO     unique title: 668
+2022-03-06 20:32:23,209 INFO     unique text_reviews_count: 371
+2022-03-06 20:32:23,211 INFO     unique average_rating: 131
+2022-03-06 20:32:23,306 INFO     unique description: 685
+2022-03-06 20:32:23,308 INFO     unique author_id: 307
+
+100k book ids:
+2022-03-06 20:42:05,991 INFO     unique user_id: 91820
+2022-03-06 20:42:06,008 INFO     unique book_id: 100000
+2022-03-06 20:42:06,014 INFO     unique rating: 6
+2022-03-06 20:42:07,812 INFO     unique review_text: 888432
+2022-03-06 20:42:07,901 INFO     unique title: 71308
+2022-03-06 20:42:07,910 INFO     unique text_reviews_count: 1714
+2022-03-06 20:42:07,920 INFO     unique average_rating: 286
+2022-03-06 20:42:08,792 INFO     unique description: 85458
+2022-03-06 20:42:08,806 INFO     unique author_id: 20871
+2022-03-06 20:43:33,569 INFO     Train split size: 638036
+2022-03-06 20:43:33,570 INFO     Validation split size: 136722
+2022-03-06 20:43:33,571 INFO     Test split size: 136722
+
+\end{comment}
 \section{Data Processing}
-\subsection{Data Download and JSON Processing}
-The selected data needs to be preprocessed to be used in a deep learning framework.
-
-* download from gdrive
-* json to csv
-
 \subsection{data preprocessing/cleaning in pandas}
-As part of the data cleaning process, the pandas columns where cleaned "on the fly" while converting the JSON data into CSV. First, the review id and book id respectively are used as the table indices. For the book information, only five of the total \todo{X} columns are used. Temporal information, like \mintinline{python}{date_added, read_at}, is removed from the review dataset, since taking this information would necessitate a different, sequential model architecture with some kind of recurrence.
-For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using all-encompassing "object" type), escaped  characters in longer texts are replaced by empty spaces.
-The two separate DataFrames are finally merged into one based on their common book IDs. Rows which contain empty column values or NaN data are dropped, which leads to the final dataset size as shown in \autoref{tab:all_data}.
+As part of the data cleaning process, the pandas columns were cleaned "on the fly" while converting the JSON data into CSV.
+The conversion to CSV was necessary because the \mintinline{python}{pandas.read_json()} implementation does not bode well with large JSON files with a single item per line in the file. Reading JSON like this leads to the RAM getting clogged up until the process finally collapses. Reading potentially gigantic CSV files into a DataFrame all at once on the other hand poses no problem at all to the library.
+First, the review id and book id respectively are used as the table indices. For the book information, only five of the total \todo{X} columns are used. Temporal information, like \mintinline{python}{date_added, read_at}, is removed from the review dataset, since taking this information would necessitate a different, sequential model architecture with some kind of recurrence.
+For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using all-encompassing "object" type), and escaped characters in longer texts are replaced by empty spaces.
+The two separate DataFrames are finally merged into one based on their common book IDs. Rows that contain empty column values or NaN data are dropped, which leads to the final dataset size as shown in \autoref{tab:all_data}.
 
-An excerpt of the data preparation process is shown in \autoref{lst:data_prep}.
+Excerpts of the data preparation process are shown in \autoref{lst:data_loading} and \autoref{lst:data_prep}.
 
 \begin{listing}[h]
     \begin{minted}[breaklines,fontsize=\footnotesize]{python}
@@ -216,7 +278,12 @@ with open(os.path.join(OUT_DIR, "books.csv"), 'a') as f:
         chunk.to_csv(f, header=False, line_terminator='\n')
 
 # (...) repeat similarly for review data
-
+    \end{minted}
+\caption{Data cleaning process for converting JSON to CSV}
+\label{lst:data_loading}
+\end{listing}
+\begin{listing}[h]
+    \begin{minted}[breaklines,fontsize=\footnotesize]{python}
 book_dtype={
     "title": 'string', 
     "description": 'string', 
@@ -236,7 +303,7 @@ df_reviews = pd.read_csv(os.path.join(DIR, csv_fn_reviews), dtype=review_dtype, 
 df_join = pd.merge(df_reviews, df_books, left_on="book_id", right_index=True)
 df_join.dropna(inplace=True)
     \end{minted}
-\caption{Data cleaning process for converting JSON to CSV, cleaning columns and merging the dataframes.}
+\caption{Settings datatypes of CSV data and merging the dataframes.}
 \label{lst:data_prep}
 \end{listing}
 
@@ -247,29 +314,29 @@ df_join.dropna(inplace=True)
 % * merge dataset into one dataframe
 
 For further processing, the data is from now on split into three disjoint \emph{train, test and validation splits} with a ratio of 70/15/15 percent.
-This "loss" of thirty percent of the possible training data is of no major concern in this application, since the available data is of such grand scale.
-The training dataset is used to train the neural network, to optimize the weights of the nodes in the network using a backpropagation algorithm to minimize the training loss function for every training batch. The validation set is used to monitor the training progress on previously unseen data to assess the generalization ability of the trained network weights. Common training callbacks, like early stopping of the training on stagnant loss improvements, or adaptive learning rate scheduling may use the validation loss metric. Finally, the test subset will be used to judge the final optimized model(s) after training has finished and hyperparameter tuning has been carried out. This three-fold split is used, because the validation dataset implicitly influences the created end-model since hyperparameters will be chosen to improve the performance based on the validation loss. A separate test dataset on the other hand can be used as an unbiased estimator of the performance.
+This "loss" of thirty percent of the possible training data is of no major concern in this application, since the available data is of such a grand scale.
+The training dataset is used to train the neural network, to optimize the weights of the nodes in the network using a backpropagation algorithm to minimize the training loss function for every training batch. The validation set is used to monitor the training progress on previously unseen data to assess the generalization ability of the trained network weights. Common training callbacks, like early stopping of the training on stagnant loss improvements, or adaptive learning rate scheduling may use the validation loss metric.
+Finally, the test subset will be used to judge the final optimized model(s) after training has finished and hyperparameter tuning has been carried out. This three-fold split is used because the validation dataset implicitly influences the created end-model since hyperparameters will be chosen to improve the performance based on the validation loss. A separate test dataset on the other hand can be used as an unbiased estimator of the performance.
 
 For higher training performance, the pandas tables (so called \mintinline{python}{DataFrames}) are converted to \mintinline{python}{TensorFlow Datasets} using the \mintinline{python}{tf.data} interface. The tf.data pipeline is optimized for high performance and allows easy usage of batch sizes, shuffling, caching and prefetching of data\footnotemark.
 \footnotetext{see \url{https://www.tensorflow.org/guide/data_performance} for an overview of the possible performance improvements by parallelization.}
-* train test validation split (warum alle 3?)
-* ttv size, batching, ...
 
 \subsection{Feature Processing}
-The data used for training consists of many different data types and for the network to properly utilize this information, dense features have to be encoded from the raw data. The Keras preprocessing API is used to build native input processing pipelines\footnotemark. These pipelines may either be built as part of a separate input processing task, or directly into the neural network models. In the final implementation, on which the results are reported, the latter was the case.
+The data used for training consists of many different data types and for the network to properly utilize this information, dense features have to be encoded from the raw data. The Keras preprocessing API is used to build native input processing pipelines\footnotemark. These pipelines may either be built as part of a separate input processing task or directly into the neural network models. In the final implementation, on which the results are reported, the latter was the case.
 
 \footnotetext{see \url{https://www.tensorflow.org/guide/keras/preprocessing_layers} for an overview of the Tensorflow implementation of the Keras input preprocessing layers}
 
 \paragraph{Continuous numerical features}
-The "review count" and "average rating" columns are continuous numerical features. The number of reviews has a lower bound of zero with an possibly unknown upper bound - the bounds are known for the training data, but the model may come upon larger numbers in testing and production. The average rating is a continuous number between 0 and 5, which is the maximum rating on the goodreads platform. Since both those features lie on very different scales, which artificial neural networks often are sensitive to, \emph{Normalization} is used to shift and scale the inputs to a distribution centered around 0 with standard deviation 1.
+The "review count" and "average rating" columns are continuous numerical features. The number of reviews has a lower bound of zero with a possibly unknown upper bound - the bounds are known for the training data, but the model may come upon larger numbers in testing and production. The average rating is a continuous number between 0 and 5, which is the maximum rating on the Goodreads platform. Since both those features lie on very different scales, which artificial neural networks often are sensitive to, \emph{Normalization} is used to shift and scale the inputs to a distribution centered around 0 with a standard deviation of 1.
 
 \paragraph{Discrete (alpha)numerical features}
-The identifiers of books, authors and users are either numerical or alphanumerical categorical values. Since the ids may be generated randomly and the available data is a randomly scraped subset of all ids, using this data raw or one-hot-encoded would lead to very sparse matrices. That's why \emph{IntegerLookup} layers are employed to map these categorical integers to continuous ranges. The layer learns a vocabulary table, adapted from the available input data, and represents the identifiers using an integer index into this dense vocabulary. 
+The identifiers of books, authors, and users are either numerical or alphanumerical categorical values. Since the ids may be generated randomly and the available data is a randomly scraped subset of all ids, using this data raw or one-hot-encoded would lead to very sparse matrices.
+That's why \emph{IntegerLookup} layers are employed to map these categorical integers to continuous ranges. The layer learns a vocabulary table, adapted from the available input data, and represents the identifiers using an integer index into this dense vocabulary. 
 The \emph{StringLookup} layers translate strings into integers in the same fashion. Each unique raw string input leads to an entry in a (possibly fixed size) vocabulary, into which the processed data will be mapped by an integer index.
 data of different types:
 
 \paragraph{Complex text features}
-While ids may be seen as distinct categorical features, longer passages of text are more complex, since they consist of arrays of strings (words). These include the review texts, book titles and description texts. To process this data, a \emph{TextVectorization} preprocessing layer is used, which processes the data in five steps:
+While ids may be seen as distinct categorical features, long passages of text are more complex, since they consist of arrays of strings (words). These include the review texts, book titles, and description texts. To process this data, a \emph{TextVectorization} preprocessing layer is used, which processes the data in five steps:
 \begin{enumerate}
     \item Standardization
     \item Splitting
@@ -277,38 +344,41 @@ While ids may be seen as distinct categorical features, longer passages of text 
     \item Indexing
     \item Transformation
 \end{enumerate}
-First each input data sample is standardized, by lowercasing the text and stripping any punctuation marks from it. Secondly, the data is separated into words. These are then recombined into "ngram" tokens, which represent consecutive word order representations, which are indexed by assigning each "ngram" a unique integer value. Finally, each sample is transformed using this index into a vector of integers.
+
+First, each input data sample is standardized, by lowercasing the text and stripping any punctuation marks from it.
+Secondly, the data is separated into words. These are then recombined into "ngram" tokens, which represent consecutive word order representations, which are indexed by assigning each "ngram" a unique integer value. Finally, each sample is transformed using this index into a vector of integers.
 This output vector may be truncated or padded to a fixed length if desired.
-With this process, a arbitrarily long text can be represented using an array of integers.
+With this process, an arbitrarily long text can be represented using an array of integers.
 
 \paragraph{Embeddings}
 All of these encoded features are each finally passed into a \emph{Embedding} layer. 
-Embedding layers transform integer indices into dense vector representations of fixed size. These embeddings reduce the dimensionality of the input data to a fixed embedding dimension, while trying to encode the input data in a way that retains important aspects of the data. For word embeddings, this means that words with similar meanings are closer together in the vector space representation than unrelated words.
+Embedding layers transform integer indices into dense vector representations of fixed size. These embeddings reduce the dimensionality of the input data to a fixed embedding dimension while trying to encode the input data in a way that retains important aspects of the data. For word embeddings, this means that words with similar meanings are closer together in the vector space representation than unrelated words.
 
 
 
 \section{Neural Network Model}
-only one model in different configurations used: Deep\&Cross Network.
-(describe network)
-tfrs ranking task
+As described in \autoref{sec:model_arch}, a stacked Deep \& Cross Network was used.
+The created Model has a \emph{Ranking-Task}, as defined in the new \emph{TensorFlow Recommenders} package \mintinline{python}{tfrs}, was used. The goal of the recommender system is to predict a ranking of the most recommendable items to the input user. To achieve this task, the main goal of the network is to predict an output rating, which makes this a regression problem. That is why the final layer has a linear activation, to predict a continuous numerical rating value as the output.
 
-(subsection?)
-* Hyperparam tuning: HyperBand (Successive Halving)
-* DNN only (no cross layers)
-* show different parameters...
+% \missingfigure{model graph}
+% (subsection?)
+% * Hyperparam tuning: HyperBand (Successive Halving)
+% * DNN only (no cross layers)
+% * show different parameters...
 
-(Table: keras -> parameters -> to df -> to latex)
+% (Table: keras -> parameters -> to df -> to latex)
 
 
 \section{Results / Hyperparameter tuning}
-Because the performance of machine learning systems heavily depends not only on the base architectures used, but also on their parametrization, hyperparameter tuning is used to optimize these parameters. Because of the large number of parameters and their possible parametrizations, the space of possible parameter combinations to be explored grows exponentially large. To handle this problem, automated search algorithms are used to heuristically get to a good, even if possibly not perfect configuration, using a reasonable amount of time and resources.
+Because the performance of machine learning systems heavily depends not only on the base architectures used but also on their parametrization, hyperparameter tuning is used to optimize these parameters.
+Because of the large number of parameters and their possible parametrization, the space of possible parameter combinations to be explored grows exponentially large. To handle this problem, automated search algorithms are used to heuristically get to a good, even if possibly not perfect configuration, using a reasonable amount of time and resources.
 
-\cite{Feurer.2019} gives a broad overview on the different kinds of hyperparameter optimization techniques. In this work, the HyperBand \cite{li2017hyperband} is used to optimize the hyperparameters. The algorithm is based on a successive halfing approach, as shown in \autoref{fig:succ_halving}.
+\cite{Feurer.2019} gives a broad overview of the different kinds of hyperparameter optimization techniques. In this work, the HyperBand \cite{li2017hyperband} is used to optimize the hyperparameters. The algorithm is based on a successive halving approach, as shown in \autoref{fig:succ_halving}.
 The training starts with $n$ different configurations, using $b=\frac{1}{n}$ of the available resources. After this training step, the configuration pool is halved, keeping only the best $n' = n/2$ configurations. At the same time, the resource budget for the remaining configurations is effectively doubled $b=\frac{1}{n'}=\frac{1}{\frac{n}{2}} = 2\times\frac{1}{n}$.
-This proceses is repeated until a single best algorithm is left. Hyperband improves on this basic successive halfing strategy by not only randomly sampling the available configurations in the parameter space but also the budgets assigned to the selected configurations. In practice, HyperBand has shown to increased performance with only a relatively small increase in computation time~\cite[p. 17]{Feurer.2019}.
+This process is repeated until a single best algorithm is left. Hyperband improves on this basic successive halving strategy by not only randomly sampling the available configurations in the parameter space but also the budgets assigned to the selected configurations. In practice, HyperBand has shown to increase performance with only a relatively small increase in computation time~\cite[p. 17]{Feurer.2019}.
 
-Hyperparameters are   
-plots vom hyperparamtuning, resultate, evtl. beispiel.
+% Hyperparameters are   
+% plots vom hyperparamtuning, resultate, evtl. beispiel.
 \todo{gesammtes Parametergrid siehe Appendix}
 
 \begin{figure}[ht]
@@ -318,13 +388,19 @@ plots vom hyperparamtuning, resultate, evtl. beispiel.
     \label{fig:succ_halving}
 \end{figure}
 
-mit/ohne Cross layers
-mit/ohne text data ( :( )
+\todo{mit/ohne cross, mit/ohne text}
+% mit/ohne Cross layers
+% mit/ohne text data ( :( )
 
-Embedding Visualization?
+% Embedding Visualization?
 
-\section{conclustion/outlook}
-Appendix: EmailCallback
+\section{conclustion}
+In this paper, the application of a neural network architecture developed in artificial intelligence and recommender systems research has been applied to a publicly available real-world dataset.
+The major tasks in the field of data science, namely data preprocessing, data cleaning and model selection in the preparation stage, and finally model training and hyperparameter optimization have been carried out in this project and documented here.
+Unfortunately, the results achieved by the trained neural network models still leave room for improvement. It goes to show, that the task of recommending a handful from thousands or millions of possible items is a very intricate problem to be solved, with no "go-to-solutions" available such as those that i.e. exist in the field of computer vision like image classification or object detection. 
+Nevertheless, this paper documents the work already completed, and the code produced may be used to further improve the system, by either comparing it to other network architectures or developing more problem-specific feature engineering approaches.
+
+\todo{Appendix: EmailCallback}
 
 \begin{comment}
     
@@ -530,14 +606,4 @@ citation first, followed by the original foreign-language citation \cite{b6}.
 \end{comment}
 \bibliography{bibliography}
 
-% \begin{thebibliography}{00}
-% \bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
-% \bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
-% \bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
-% \bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
-% \bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
-% \bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
-% \bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
-% \bibitem{todo} TODO ADD CITATION, Nowhere, 2022
-% \end{thebibliography}
 \end{document}
