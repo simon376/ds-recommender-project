@@ -12,6 +12,7 @@
 \usepackage{comment}
 \usepackage{minted}
 \usepackage{xurl}
+\usepackage{adjustbox}
 
 \providecommand*{\listingautorefname}{Listing}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -52,25 +53,20 @@ There are two main types of classic recommendation methods, Content-based Filter
 Collaborative Filtering on one hand tries not to perfectly know the specific item the targeted user may be most interested in but instead tries to best categorize the user base into different groups with similar interests. This is done because users with similar general interests generally respond the same to specific recommended items, and often a "perfect fit" is unnecessary or virtually impossible to achieve because of the sparsity of the available data.
 Collaborative Filtering methods are especially useful for predicting click-through rates for advertisements, because in this context, usually, only implicit feedback is available. Implicit feedback is feedback data tracked by cookies with only relatively insignificant correlations. A click on a search result or an item on a shopping website, or a like on a social media post are considered implicit feedback.  When the data consists of millions of these small interactions, this implicit feedback may be used to give explicit recommendations. For this approach, a huge data set is needed, since a single click is of little value, because i.e. it may be a misclick without any relevance to the user. Implicit feedback dataset matrices usually consist of thousands of features, which are occupied only very sparsely.
 
-\todo{und wie wird das berechnet? formel}
-
 
 Content-based filtering on the other hand instead tries to achieve the opposite. These algorithms take as much information available about the items (the content) as possible to predict the interest of a user for it, or the likelihood of an interaction respectively. These approaches usually rely on explicit feedback by the users, which makes predictions more predictable. They are used in domains like streaming services, where for example the service provider can estimate if the user liked a movie if he watched it completely, and especially if the user gives an explicit item rating, usually on a 1-5 stars or at least a like/dislike basis.
 
-\todo{berechnung}
-% matrix factorization
 
 A basic approach to predict these likelihoods is to estimate a user-item matrix, with each unique user as a row and all the available items as columns, where the matrix cells [i,j] are filled with a calculated probability of interaction or the predicated rating or similar interest indicator. 
 
 Deep-Learning-based systems try to combine these approaches while letting a deep neural network architecture take care of the feature selection to gain the best recommendations.
 
-\todo{Einführung in RecSys - Collaborative vs Content-based Filtering, Matrix Factorization (ok das nicht). }
-\todo{seit allerneustem auch in pytorch}
 \section{related work}
 The survey \cite{Zhang.2020} provides a very in-depth review of current deep-learning-based recommender system approaches using all kinds of deep learning algorithms and network structures from CNNs, GRUs, Deep Factorization Machines, to Reinforcement-Learning- and Attention-based systems.
 
 For this work, the Deep \& Cross Network \cite{Wang.2017} \cite{Wang.2021} developed by researchers at Google was used. This network was mainly chosen because of an existing tutorial and basic sample implementation in the Tensorflow framework.
-Initially, a comparison between different recommendation architectures like Neural Collaborative Filtering \cite{He.2017}, developed at the University of Singapore, Wide \& Deep learning \cite{Cheng.2016} by Google and DLRM \cite{Naumov.31.05.2019} by Facebook researchers, was planned. Unfortunately finding running implementations in the current Tensorflow version 2, using similar programming interfaces (since Tensorflow provides a few different ways to provide data and define models), and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea was abandoned in the end.
+Initially, a comparison between different recommendation architectures like Neural Collaborative Filtering \cite{He.2017}, developed at the University of Singapore, Wide \& Deep learning \cite{Cheng.2016} by Google and DLRM \cite{Naumov.31.05.2019} by Facebook researchers, was planned.
+Unfortunately finding running implementations in the current Tensorflow version 2, using similar programming interfaces (since Tensorflow provides a few different ways to provide data and define models), and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea was abandoned in the end.
 
 
 \section{research question}
@@ -103,10 +99,6 @@ $ x_{0} $ is the base layer (embedding layer), $ x_{i} $  is the input to the cr
 For a more detailed description of the model and the used cross layers, one may refer to the original papers or this simpler explanation in a TensorFlow Blog post~\cite{Wang.2020}.
 
 
-% \section{concept}
-
-% ...
-% auswahl des models / der models
 \section{technology stack}
 The implementation and initial training of the deep learning-based recommender system presented in this work was carried out on a local machine running Windows 11 and was later moved to a more performant Unix-based machine hosted by the University of Applied Sciences Augsburg, its "daenerys" server.
 The programming was done in python, the most commonly used programming language in this field. For data preprocessing and cleaning, the \emph{pandas} library was used.
@@ -119,11 +111,14 @@ The dataset was scraped in late 2017 from the website goodreads.com and last upd
 
 The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
 Because of the sheer scale of the data set, the authors recommend using only a subset of the data, especially when used on a local machine. For this, they have created subsets for different genres, like \emph{"Children"}, \emph{"History \& Biography"} or \emph{"Mystery, Thriller \& Crime"}. These categorizations may not be perfect and may overlap, since a genre specification is not directly available in the book metadata, but is instead inferred from the shelves users have put the books on.
+From this gigantic dataset, only a subset was read in the preprocessing process, as will be described in \autoref{sec:data_preprocessing}, leading to the number of column values in the following tables.
+
 \subsection{Books}
 The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date and a description text. The available columns are shown in \autoref{tab:book_cols}. As shown in the table, a textual description string is not available for all datapoints.
 \begin{table}[h]        
-    \begin{center}
-        \begin{tabular}{clll}
+    \centering
+    \caption{available columns from the \emph{Mystery, Thriller \&Crime} books data subset}
+    \begin{tabular}{clll}
             \toprule
             \# & Column & Non-Null Count & Dtype \\
             \midrule
@@ -134,8 +129,6 @@ The book data set contains 2.36 million entries, including information like a un
             4 & author\_id & 219235 non-null & int64 \\
             \bottomrule
         \end{tabular}
-    \end{center}
-\caption{available columns from the \emph{Mystery, Thriller \&Crime} books data subset}
 \label{tab:book_cols}
 \end{table}
     
@@ -150,52 +143,50 @@ A more detailed data set adds time information to this, recording when the user 
 On top of the book metadata and basic user interactions with these books, textual reviews have been scraped. The complete dataset contains multilingual review text without spoiler tags. It contains more than 15M reviews about ~2M books and 465K users. Users of the website can add spoiler tags to hide sensitive plot information from other readers, these tags have been removed from the dataset. This data was used to train a neural network to autonomously detect spoilers in text data \cite{Wan.2019}.
 
 The columns of this data are shown in \autoref{tab:review_cols}. It should be noted, that only about 40 percent of the available 1.3 million review text datapoints was used to limit the performance impact and training times for training models on such large scale data.
-\todo{das ist der output, input ist viel mehr..}
 \begin{table}[h]
-\begin{center}
-        \begin{tabular}{clll}
+    \centering
+    \caption{available columns from the \emph{Mystery, Thriller \&Crime} review data subset}
+    \begin{tabular}{clll}
             \toprule
             \# & Column & Non-Null Count & Dtype \\
             \midrule
-            0 & user\_id & 735000 non-null & object \\
-            1 & book\_id & 735000 non-null & uint32 \\
-            2 & rating & 735000 non-null & uint8 \\
-            3 & review\_text & 734832 non-null & string \\
+            0 & user\_id & 1025000  non-null & object \\
+            1 & book\_id & 1025000  non-null & uint32 \\
+            2 & rating & 1025000  non-null & uint8 \\
+            3 & review\_text & 1025000  non-null & string \\
             \bottomrule
             \end{tabular}        
-            \caption{available columns from the \emph{Mystery, Thriller \&Crime} review data subset}
             \label{tab:review_cols}
-    
-\end{center}\end{table}
+\end{table}
 
 \subsection{authors}
 There is a separate data set available for author information, e.g. their names, number of reviews to their books, and their average rating. This information was not used, since the author's id as a unique identifier was deemed as sufficient information, whereas specific book (item) features seemed to be of greater importance.
 
-\subsection{Data used in this work}
+\subsection{Data used in this work}\label{sec:data_used}
 As described in the preceding paragraphs, the provided dataset is of an industrial scale. To explore the data and train neural networks in a reasonable time, only a subset of data is used.
 The \emph{Mystery, Thriller \&Crime} subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used, because the main point of interest in this work was to learn recommendations based on explicit content information, like the item descriptions, and not to imitate recommender systems used e.g. for ad-click-prediction using implicit interactions feedback.
 
 \begin{table}[h]
-\begin{center}
+    \centering
+    \caption{combined dataset}
+    \label{tab:all_data}
         \begin{tabular}{clll}
-            \toprule
-            \# & Column & Non-Null Count & Dtype \\
-            \midrule
-            0 & user\_id & 981705 non-null & object \\
-            1 & book\_id & 981705 non-null & uint32 \\
-            2 & rating & 981705 non-null & uint8 \\
-            3 & review\_text & 981705 non-null & string \\
-            4 & title & 981705 non-null & string \\
-            5 & text\_reviews\_count & 981705 non-null & uint64 \\
-            6 & average\_rating & 981705 non-null & float64 \\
-            7 & description & 981705 non-null & string \\
-            8 & author\_id & 981705 non-null & int64 \\
-            \bottomrule
-                    \end{tabular}
-        \caption{combined dataset used}
-        \label{tab:all_data}
-    
-\end{center}\end{table}
+                \toprule
+                Column & \# Unique Values \\
+                \midrule
+                user\_id & 93480  \\
+                book\_id & 152258\\
+                rating & 6\\
+                review\_text & 956133\\
+                title & 99813 \\
+                text\_reviews\_count & 1715 \\
+                average\_rating & 296 \\
+                description & 123034 \\
+                author\_id & 25548 \\
+                \bottomrule
+        \end{tabular}
+    \end{table}
+
 \begin{comment}
 all data:
 2022-03-05 20:13:09,578 INFO     unique user_id: 93480
@@ -236,7 +227,7 @@ all data:
 2022-03-06 20:43:33,571 INFO     Test split size: 136722
 
 \end{comment}
-\section{Data Processing}
+\section{Data Processing}\label{sec:data_preprocessing}
 \subsection{data preprocessing/cleaning in pandas}
 As part of the data cleaning process, the pandas columns were cleaned "on the fly" while converting the JSON data into CSV.
 The conversion to CSV was necessary because the \mintinline{python}{pandas.read_json()} implementation does not bode well with large JSON files with a single item per line in the file. Reading JSON like this leads to the RAM getting clogged up until the process finally collapses. Reading potentially gigantic CSV files into a DataFrame all at once on the other hand poses no problem at all to the library.
@@ -279,7 +270,7 @@ with open(os.path.join(OUT_DIR, "books.csv"), 'a') as f:
 
 # (...) repeat similarly for review data
     \end{minted}
-\caption{Data cleaning process for converting JSON to CSV}
+\caption{\small Data cleaning process for converting JSON to CSV}
 \label{lst:data_loading}
 \end{listing}
 \begin{listing}[h]
@@ -303,7 +294,7 @@ df_reviews = pd.read_csv(os.path.join(DIR, csv_fn_reviews), dtype=review_dtype, 
 df_join = pd.merge(df_reviews, df_books, left_on="book_id", right_index=True)
 df_join.dropna(inplace=True)
     \end{minted}
-\caption{Settings datatypes of CSV data and merging the dataframes.}
+\caption{\small Settings datatypes of CSV data and merging the dataframes.}
 \label{lst:data_prep}
 \end{listing}
 
@@ -360,26 +351,33 @@ Embedding layers transform integer indices into dense vector representations of 
 As described in \autoref{sec:model_arch}, a stacked Deep \& Cross Network was used.
 The created Model has a \emph{Ranking-Task}, as defined in the new \emph{TensorFlow Recommenders} package \mintinline{python}{tfrs}, was used. The goal of the recommender system is to predict a ranking of the most recommendable items to the input user. To achieve this task, the main goal of the network is to predict an output rating, which makes this a regression problem. That is why the final layer has a linear activation, to predict a continuous numerical rating value as the output.
 
-% \missingfigure{model graph}
-% (subsection?)
-% * Hyperparam tuning: HyperBand (Successive Halving)
-% * DNN only (no cross layers)
-% * show different parameters...
+The training results shown in the next section where produced using the data columns described in\autoref{sec:data_used}. For the first training runs, the joined data table was cut off at 100k entries, which lead to unbalanced data, with close to 100k revie texts by 40k users for only 691 unique books.
+In the latest trainings and in the hyperparameter tuning process, instead the number of unique book ids was set to 100k. This in turn lead to the data table sizes shown in \autoref{tab:used_data} with 100.000 unique books from more than 20k unique authors, read by more than 90k users with a total of almost 900k review texts. The training was performed using a batch size of 512 items per batch. The loss function chosen was mean squared Error (MSE), with root mean squared error (RMSE) as an evaluation metric for the validation data subset.
 
-% (Table: keras -> parameters -> to df -> to latex)
-
-
+\begin{table}[h]
+    \centering
+        \caption{combined dataset used for hyperparameter tuning}
+        \begin{tabular}{clll}
+                \toprule
+                Column & \# Unique Values \\
+                \midrule
+                user\_id & 91820  \\
+                book\_id & 100000\\
+                rating & 6\\
+                review\_text & 888432\\
+                title & 71308 \\
+                text\_reviews\_count & 1714 \\
+                average\_rating & 286 \\
+                description & 85458 \\
+                author\_id & 20871 \\
+                \bottomrule
+        \end{tabular}
+            \label{tab:used_data}
+\end{table}
+    
 \section{Results / Hyperparameter tuning}
 Because the performance of machine learning systems heavily depends not only on the base architectures used but also on their parametrization, hyperparameter tuning is used to optimize these parameters.
 Because of the large number of parameters and their possible parametrization, the space of possible parameter combinations to be explored grows exponentially large. To handle this problem, automated search algorithms are used to heuristically get to a good, even if possibly not perfect configuration, using a reasonable amount of time and resources.
-
-\cite{Feurer.2019} gives a broad overview of the different kinds of hyperparameter optimization techniques. In this work, the HyperBand \cite{li2017hyperband} is used to optimize the hyperparameters. The algorithm is based on a successive halving approach, as shown in \autoref{fig:succ_halving}.
-The training starts with $n$ different configurations, using $b=\frac{1}{n}$ of the available resources. After this training step, the configuration pool is halved, keeping only the best $n' = n/2$ configurations. At the same time, the resource budget for the remaining configurations is effectively doubled $b=\frac{1}{n'}=\frac{1}{\frac{n}{2}} = 2\times\frac{1}{n}$.
-This process is repeated until a single best algorithm is left. Hyperband improves on this basic successive halving strategy by not only randomly sampling the available configurations in the parameter space but also the budgets assigned to the selected configurations. In practice, HyperBand has shown to increase performance with only a relatively small increase in computation time~\cite[p. 17]{Feurer.2019}.
-
-% Hyperparameters are   
-% plots vom hyperparamtuning, resultate, evtl. beispiel.
-\todo{gesammtes Parametergrid siehe Appendix}
 
 \begin{figure}[ht]
     \centering
@@ -388,19 +386,60 @@ This process is repeated until a single best algorithm is left. Hyperband improv
     \label{fig:succ_halving}
 \end{figure}
 
-\todo{mit/ohne cross, mit/ohne text}
-% mit/ohne Cross layers
-% mit/ohne text data ( :( )
+\cite{Feurer.2019} gives a broad overview of the different kinds of hyperparameter optimization techniques. In this work, the HyperBand \cite{li2017hyperband} is used to optimize the hyperparameters. The algorithm is based on a successive halving approach, as shown in \autoref{fig:succ_halving}.
+The training starts with $n$ different configurations, using $b=\frac{1}{n}$ of the available resources. After this training step, the configuration pool is halved, keeping only the best $n' = n/2$ configurations. At the same time, the resource budget for the remaining configurations is effectively doubled $b=\frac{1}{n'}=\frac{1}{\frac{n}{2}} = 2\times\frac{1}{n}$.
+This process is repeated until a single best algorithm is left. Hyperband improves on this basic successive halving strategy by not only randomly sampling the available configurations in the parameter space but also the budgets assigned to the selected configurations. In practice, HyperBand has shown to increase performance with only a relatively small increase in computation time~\cite[p. 17]{Feurer.2019}.
 
-% Embedding Visualization?
+\begin{table}[htb]
+\centering
+    \caption{Hyperparameter search space for Keras model tuning}
+    \begin{tabular}{cl}
+            \toprule
+            parameter name       & search space                   \\ 
+            \midrule
+            \# deep layers       & {[}1, 2, 3, 4{]}               \\
+            deep layer size      & {[}128, 256, 512{]}            \\
+            \# cross layers      & {[}1, 2, 3, 4{]}               \\
+            learning rate        & {[}0.0001, 0.001, 0.01, 0.1{]} \\
+            optimizer            & adam, adagrad                  \\
+            projection dimension & {[}32, 64, 128{]}              \\ 
+            \bottomrule
+        \end{tabular}
+    \label{tab:hparam_space}
+\end{table}
+
+
+The implemented Deep \& Cross Network architecture was tuned using the parameter search space as shown in \autoref{tab:hparam_space}.  This large search space was explored using the mentioned HyperBand algorithm.
+In \autoref{fig:rmse_it} one can see the results of the successive halving approach used in the HyperBand algorithm. The figure shows the Root Mean Squared Error (RMSE), which is the evaluation metric for regression problems, in relation to the number of training steps carried out on different model configurations. The evaluations were carried out on the end of each epoch, where the number of models at the subsequent epochs were reduced according to the algorithm. The figure shows all Hyperband runs conducted with slightly different setups, through each whole parameter search space, to show the sheer number of trainings and evaluations.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{hp_tuning_20220_evaluation_root_mean_squared_error_vs_iterations.pdf}
+    \caption{Evaluation results after number of training iterations. x-axis shows the number of steps, y-axis the evaluation metric Root Mean Squared Error (RMSE).}
+    \label{fig:rmse_it}
+\end{figure}
+
+The parameter configurations of the top 50 best performing models can be found in \autoref{tab:hyp_table}. As one can see in the accompanying \autoref{fig:scatter}, there is no strong correlation between one specific parameter setting and a better performance, since all variables are highly interdependent. That is why one can not define one general rule as to which parameter setting would be better, because only certain specific combinations for this specific model and dataset work better.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\linewidth]{hparam_scatter.jpg}
+    \caption{Scatter plot matrix showing the relationship between selected parameters and resulting RMSE}
+    \label{fig:scatter}
+\end{figure}
+
+
+As can be seen in \autoref{tab:hyp_table} and in \autoref{fig:rmse_it}, of all the training efforts with different hyperparameter settings performed, the best settings always lead to the same resulting RMSE of about 1.14.
+One advantage of RMSE is, that the resulting value is of the same unit as the input data, which means that the learned book ratings predicted for the test data presented to the neural network lie 1.14 points - or "stars" in the Goodreads nomenclature - off the actual ratings.
+Working on a scale from 0 to 5, these results may be a bit disheartening, especially since none of the changes made to the network architecture seemed to have any positive effect breaking through this performance "barrier". Indeed, there where a few more experiments carried out, which will not be discussed here any further, using e.g. only a deep network architecture (with 0 number of cross layers), using an adaptive learning rate, using mean absolute error (MAE) instead of RMSE, and with only using ID data without complex text information. But none of those experiments lead to any better results, neither.
+
 
 \section{conclustion}
 In this paper, the application of a neural network architecture developed in artificial intelligence and recommender systems research has been applied to a publicly available real-world dataset.
 The major tasks in the field of data science, namely data preprocessing, data cleaning and model selection in the preparation stage, and finally model training and hyperparameter optimization have been carried out in this project and documented here.
 Unfortunately, the results achieved by the trained neural network models still leave room for improvement. It goes to show, that the task of recommending a handful from thousands or millions of possible items is a very intricate problem to be solved, with no "go-to-solutions" available such as those that i.e. exist in the field of computer vision like image classification or object detection. 
-Nevertheless, this paper documents the work already completed, and the code produced may be used to further improve the system, by either comparing it to other network architectures or developing more problem-specific feature engineering approaches.
+Nevertheless, this paper documents the work already completed, and the code produced may be used to further improve the system, by either comparing it to other network architectures, using different word embeddings or developing more problem-specific feature engineering approaches.
 
-\todo{Appendix: EmailCallback}
 
 \begin{comment}
     
@@ -605,5 +644,8 @@ For papers published in translation journals, please give the English
 citation first, followed by the original foreign-language citation \cite{b6}.
 \end{comment}
 \bibliography{bibliography}
+\pagebreak
+\include{hparams_table.tex}
+
 
 \end{document}
