@@ -17,13 +17,13 @@
 \providecommand*{\listingautorefname}{Listing}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
-\usepackage{todonotes}
+
 \begin{document}
 
 \title{Exploring Deep-Learning Recommender Systems for Book Recommendations}
 
 \author{\IEEEauthorblockN{1\textsuperscript{st} Simon Müller}
-\IEEEauthorblockA{\textit{Computer Science student, Data Science class} \\
+\IEEEauthorblockA{\textit{M.Sc. Computer Science student, Data Science class} \\
 \textit{University of Applied Sciences Augsburg}\\
 Augsburg, Germany \\
 simon.mueller3@hs-augsburg.de}}
@@ -35,7 +35,7 @@ In this paper, a deep-learning-based recommendation system for recommending book
 \end{abstract}
 
 \begin{IEEEkeywords}
-deep learning, recommendation, neural networks, recommender systems, deep \& cross network
+deep learning, recommendation, neural networks, recommender systems, deep \& cross network, hyperparameter tuning
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -46,7 +46,7 @@ Recommendation systems are used especially in the advertising and sales business
 For all of these examples, the users of the respective platforms and services have to be recommended the most appropriate products, pieces of content, or advertisements to keep the user's interest in the service. This task is the goal of the recommender or recommendation systems, which will be explored in this paper on a concrete data set.
 
 \section{state of the art}\label{sec:stateoftheart}
-As described in the Introduction, most interest in the topic arises in the advertisement and sales business, which is why a lot of research is being done by the research departments of Google/Alphabet, Meta (formerly Facebook), Microsoft, and Amazon.
+As described in the Introduction, most interest in the topic arises in the advertisement and sales business, which is why a lot of research is being done by the research departments of Google, Meta (formerly Facebook), Microsoft, and Amazon.
 
 In the following section, a general ontology of recommendation systems will be presented.
 There are two main types of classic recommendation methods, Content-based Filtering and Collaborative Filtering. They differ in their main goals and the data available. 
@@ -55,7 +55,6 @@ Collaborative Filtering methods are especially useful for predicting click-throu
 
 
 Content-based filtering on the other hand instead tries to achieve the opposite. These algorithms take as much information available about the items (the content) as possible to predict the interest of a user for it, or the likelihood of an interaction respectively. These approaches usually rely on explicit feedback by the users, which makes predictions more predictable. They are used in domains like streaming services, where for example the service provider can estimate if the user liked a movie if he watched it completely, and especially if the user gives an explicit item rating, usually on a 1-5 stars or at least a like/dislike basis.
-
 
 A basic approach to predict these likelihoods is to estimate a user-item matrix, with each unique user as a row and all the available items as columns, where the matrix cells [i,j] are filled with a calculated probability of interaction or the predicated rating or similar interest indicator. 
 
@@ -66,7 +65,7 @@ The survey \cite{Zhang.2020} provides a very in-depth review of current deep-lea
 
 For this work, the Deep \& Cross Network \cite{Wang.2017} \cite{Wang.2021} developed by researchers at Google was used. This network was mainly chosen because of an existing tutorial and basic sample implementation in the Tensorflow framework.
 Initially, a comparison between different recommendation architectures like Neural Collaborative Filtering \cite{He.2017}, developed at the University of Singapore, Wide \& Deep learning \cite{Cheng.2016} by Google and DLRM \cite{Naumov.31.05.2019} by Facebook researchers, was planned.
-Unfortunately finding running implementations in the current Tensorflow version 2, using similar programming interfaces (since Tensorflow provides a few different ways to provide data and define models), and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea was abandoned in the end.
+Unfortunately finding running implementations in the current Tensorflow version 2, using similar programming interfaces (since Tensorflow provides a few different ways to provide data and define models), and adapting them to the available dataset proved to be way more complicated than anticipated, which is why the idea had to be abandoned in the end.
 
 
 \section{research question}
@@ -84,9 +83,10 @@ An important part of this task was the inclusion of textual features of differen
 \end{figure}
 
 \autoref{fig:dcn_arch} shows two variants of the Deep \& Cross Network architecture as defined in \cite{Wang.2021}. For this paper, the "Stacked" approach was used.
-In both of them, the network consists of three parts. First, in the Embedding Layer, for sparse (categorical) features, dense embeddings are learned and then concatenated to dense (numerical) features to create the network input. These features are then fed into the cross sub-network, in which feature interactions using the cross layers are modeled. After passing through an activation layer, these crossed features are passed to the second, deep sub-network, in which deep dense layers are used. After a final activation function appropriate to the problem on hand (softmax for multi-class classification, linear for regression), the final output can be received from the model.
+In both of them, the network consists of three parts. 
+First, in the Embedding Layer, for sparse (categorical) features, dense embeddings are learned and then concatenated to dense (numerical) features to create the network input. These features are then fed into the cross sub-network, in which feature interactions using the cross layers are modeled. After passing through an activation layer, these crossed features are passed to the second, deep sub-network, in which deep densely connected layers are used. After a final activation function appropriate to the problem on hand (softmax for multi-class classification, linear for regression), the final output can be received from the model.
 
-The cross network applies feature crossing at each layer, with cross orders (polynomial degrees) increasing with layer depth. \autoref{fig:dcn_cross} shows the $ (i+1) $-th cross layer.
+The cross-network applies feature crossing at each layer, with cross orders (polynomial degrees) increasing with layer depth. \autoref{fig:dcn_cross} shows the $ (i+1) $-th cross-layer.
 $ x_{0} $ is the base layer (embedding layer), $ x_{i} $  is the input to the cross layer, $ \bigodot $ represents element-wise multiplications, and matrix $ W $ and vector $ b $ are the parameters to be learned.
 
 \begin{figure}[ht]
@@ -96,42 +96,33 @@ $ x_{0} $ is the base layer (embedding layer), $ x_{i} $  is the input to the cr
     \label{fig:dcn_cross}
 \end{figure}
 
-For a more detailed description of the model and the used cross layers, one may refer to the original papers or this simpler explanation in a TensorFlow Blog post~\cite{Wang.2020}.
+For a more detailed description of the model and the used cross layers, one may refer to the original papers or the simpler explanation in a TensorFlow Blog post~\cite{Wang.2020}.
 
 
 \section{technology stack}
 The implementation and initial training of the deep learning-based recommender system presented in this work was carried out on a local machine running Windows 11 and was later moved to a more performant Unix-based machine hosted by the University of Applied Sciences Augsburg, its "daenerys" server.
-The programming was done in python, the most commonly used programming language in this field. For data preprocessing and cleaning, the \emph{pandas} library was used.
+The programming was done in python, the most commonly used programming language in this field, using Jupyter Notebooks for easier interactive experimentation. For data preprocessing and cleaning, the \emph{pandas} library was used.
 \emph{Tensorflow} was used as the machine learning framework to implement both the data processing pipeline as well as the deep learning recommendation system models. For the data input and processing pipeline, the \mintinline{python}{tf.data} TensorFlow interface was used.
 
 
 \section{data set}\label{sec:data}
 The data set used for this work is the \emph{"UCSD~Book~Graph"}~\cite{Wan.2018}~\cite{Wan.2019}, created at the University of California, San Diego (UCSD).
-The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. Goodreads is a social media platform where users can create virtual bookshelves to show their collections, track their reading progress, discuss books in forums and create text reviews for the books they've read. Goodreads was launched in 2006 and has since been bought by Amazon in 2013. The platform has over 90 million users as of 2019.
+The dataset was scraped in late 2017 from the website goodreads.com and last updated in 2019 and consists only of publicly available data. Goodreads is a social media platform where users can create virtual bookshelves to show their book collections, track their reading progress, discuss books in forums and create text reviews for the books they've read. Goodreads was launched in 2006 and has since been bought by Amazon in 2013. The platform has over 90 million users as of 2019.
 
 The provided dataset is of enormous size, containing information about more than two million books, more than 800k users, with more than 200 million interactions between the latter.
 Because of the sheer scale of the data set, the authors recommend using only a subset of the data, especially when used on a local machine. For this, they have created subsets for different genres, like \emph{"Children"}, \emph{"History \& Biography"} or \emph{"Mystery, Thriller \& Crime"}. These categorizations may not be perfect and may overlap, since a genre specification is not directly available in the book metadata, but is instead inferred from the shelves users have put the books on.
-From this gigantic dataset, only a subset was read in the preprocessing process, as will be described in \autoref{sec:data_preprocessing}, leading to the number of column values in the following tables.
+From this gigantic dataset, only a subset was read in the preprocessing process, as will be described in \autoref{sec:data_preprocessing}.
 
 \subsection{Books}
-The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date and a description text. The available columns are shown in \autoref{tab:book_cols}. As shown in the table, a textual description string is not available for all datapoints.
-\begin{table}[h]        
-    \centering
-    \caption{available columns from the \emph{Mystery, Thriller \&Crime} books data subset}
-    \begin{tabular}{clll}
-            \toprule
-            \# & Column & Non-Null Count & Dtype \\
-            \midrule
-            0 & title & 219235 non-null & string \\
-            1 & text\_reviews\_count & 219235 non-null & uint32 \\
-            2 & average\_rating & 219235 non-null & float64 \\
-            3 & description & 198488 non-null & string \\
-            4 & author\_id & 219235 non-null & int64 \\
-            \bottomrule
-        \end{tabular}
-\label{tab:book_cols}
-\end{table}
-    
+The book data set contains 2.36 million entries, including information like a unique ID, title, author, release date, and a description text. A sample of all the available columns is shown in \autoref{tab:book_sample} in the Appendix. As shown in the table, not every column is available for all data points.
+For building this recommender system, only the following columns were deemed to be useful and used consequently:
+\begin{itemize}
+    \item title
+    \item number of text reviews (popularity)
+    \item average rating
+    \item description text
+    \item author ID
+\end{itemize}
 
 \subsection{Shelves}
 Users of the Goodreads website may categorize their books into different shelves. Some of them may be exclusive. The most prominent shelves are the three pre-defined shelves "to-read", "read", and "want-to-read". On top of that, users may add as many shelves as they like and place books into one or more of them to keep track of their book collection.
@@ -142,29 +133,21 @@ A more detailed data set adds time information to this, recording when the user 
 \subsection{Reviews}
 On top of the book metadata and basic user interactions with these books, textual reviews have been scraped. The complete dataset contains multilingual review text without spoiler tags. It contains more than 15M reviews about ~2M books and 465K users. Users of the website can add spoiler tags to hide sensitive plot information from other readers, these tags have been removed from the dataset. This data was used to train a neural network to autonomously detect spoilers in text data \cite{Wan.2019}.
 
-The columns of this data are shown in \autoref{tab:review_cols}. It should be noted, that only about 40 percent of the available 1.3 million review text datapoints was used to limit the performance impact and training times for training models on such large scale data.
-\begin{table}[h]
-    \centering
-    \caption{available columns from the \emph{Mystery, Thriller \&Crime} review data subset}
-    \begin{tabular}{clll}
-            \toprule
-            \# & Column & Non-Null Count & Dtype \\
-            \midrule
-            0 & user\_id & 1025000  non-null & object \\
-            1 & book\_id & 1025000  non-null & uint32 \\
-            2 & rating & 1025000  non-null & uint8 \\
-            3 & review\_text & 1025000  non-null & string \\
-            \bottomrule
-            \end{tabular}        
-            \label{tab:review_cols}
-\end{table}
+The columns of this data are shown in the sample \autoref{tab:review_sample} in the Appendix. It should be noted, that only about 40 percent of the available 1.3 million review text data points were used to limit the performance impact and training times for training models on such large scale data.
+From the review data available, only the following columns were used:
+\begin{itemize}
+    \item user ID
+    \item book ID
+    \item rating
+    \item review text
+\end{itemize}
 
 \subsection{authors}
 There is a separate data set available for author information, e.g. their names, number of reviews to their books, and their average rating. This information was not used, since the author's id as a unique identifier was deemed as sufficient information, whereas specific book (item) features seemed to be of greater importance.
 
-\subsection{Data used in this work}\label{sec:data_used}
+\subsection{Data subset used in this work}\label{sec:data_used}
 As described in the preceding paragraphs, the provided dataset is of an industrial scale. To explore the data and train neural networks in a reasonable time, only a subset of data is used.
-The \emph{Mystery, Thriller \&Crime} subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used, because the main point of interest in this work was to learn recommendations based on explicit content information, like the item descriptions, and not to imitate recommender systems used e.g. for ad-click-prediction using implicit interactions feedback.
+The \emph{Mystery, Thriller \& Crime} subset was chosen for this work. It consists of 219,235 books and 1,849,236 detailed text reviews. The interaction data was not used, because the main point of interest in this work was to learn recommendations based on explicit content information, like the item descriptions, and not to imitate recommender systems used e.g. for ad-click-prediction using implicit interactions feedback.
 
 \begin{table}[h]
     \centering
@@ -187,52 +170,13 @@ The \emph{Mystery, Thriller \&Crime} subset was chosen for this work. It consist
         \end{tabular}
     \end{table}
 
-\begin{comment}
-all data:
-2022-03-05 20:13:09,578 INFO     unique user_id: 93480
-2022-03-05 20:13:09,592 INFO     unique book_id: 152258
-2022-03-05 20:13:09,598 INFO     unique rating: 6
-2022-03-05 20:13:11,362 INFO     unique review_text: 956133
-2022-03-05 20:13:11,450 INFO     unique title: 99813
-2022-03-05 20:13:11,458 INFO     unique text_reviews_count: 1715
-2022-03-05 20:13:11,467 INFO     unique average_rating: 296
-2022-03-05 20:13:12,483 INFO     unique description: 123034
-2022-03-05 20:13:12,498 INFO     unique author_id: 25548
-\end{comment}
-    \todo{im appendix beispielinhalt zeigen}
-\begin{comment}
-100k limit:
-2022-03-06 20:32:22,965 INFO     unique user_id: 40969
-2022-03-06 20:32:22,968 INFO     unique book_id: 691 (!)
-2022-03-06 20:32:22,971 INFO     unique rating: 6
-2022-03-06 20:32:23,199 INFO     unique review_text: 98499
-2022-03-06 20:32:23,207 INFO     unique title: 668
-2022-03-06 20:32:23,209 INFO     unique text_reviews_count: 371
-2022-03-06 20:32:23,211 INFO     unique average_rating: 131
-2022-03-06 20:32:23,306 INFO     unique description: 685
-2022-03-06 20:32:23,308 INFO     unique author_id: 307
-
-100k book ids:
-2022-03-06 20:42:05,991 INFO     unique user_id: 91820
-2022-03-06 20:42:06,008 INFO     unique book_id: 100000
-2022-03-06 20:42:06,014 INFO     unique rating: 6
-2022-03-06 20:42:07,812 INFO     unique review_text: 888432
-2022-03-06 20:42:07,901 INFO     unique title: 71308
-2022-03-06 20:42:07,910 INFO     unique text_reviews_count: 1714
-2022-03-06 20:42:07,920 INFO     unique average_rating: 286
-2022-03-06 20:42:08,792 INFO     unique description: 85458
-2022-03-06 20:42:08,806 INFO     unique author_id: 20871
-2022-03-06 20:43:33,569 INFO     Train split size: 638036
-2022-03-06 20:43:33,570 INFO     Validation split size: 136722
-2022-03-06 20:43:33,571 INFO     Test split size: 136722
-
-\end{comment}
 \section{Data Processing}\label{sec:data_preprocessing}
-\subsection{data preprocessing/cleaning in pandas}
+\subsection{data cleaning and preprocessing}
 As part of the data cleaning process, the pandas columns were cleaned "on the fly" while converting the JSON data into CSV.
 The conversion to CSV was necessary because the \mintinline{python}{pandas.read_json()} implementation does not bode well with large JSON files with a single item per line in the file. Reading JSON like this leads to the RAM getting clogged up until the process finally collapses. Reading potentially gigantic CSV files into a DataFrame all at once on the other hand poses no problem at all to the library.
-First, the review id and book id respectively are used as the table indices. For the book information, only five of the total \todo{X} columns are used. Temporal information, like \mintinline{python}{date_added, read_at}, is removed from the review dataset, since taking this information would necessitate a different, sequential model architecture with some kind of recurrence.
-For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using all-encompassing "object" type), and escaped characters in longer texts are replaced by empty spaces.
+
+First, the review id and book id respectively are used as the table indices. For the book information, only five of the available columns are used. Temporal information, like "date added", "read at", is removed from the review dataset, since taking this information would necessitate a different, sequential model architecture with some kind of recurrence.
+For the remaining columns of the CSV dataset, fitting datatypes are set (instead of using the all-encompassing "object" type) and escaped characters in longer texts are replaced by empty spaces.
 The two separate DataFrames are finally merged into one based on their common book IDs. Rows that contain empty column values or NaN data are dropped, which leads to the final dataset size as shown in \autoref{tab:all_data}.
 
 Excerpts of the data preparation process are shown in \autoref{lst:data_loading} and \autoref{lst:data_prep}.
@@ -309,7 +253,7 @@ This "loss" of thirty percent of the possible training data is of no major conce
 The training dataset is used to train the neural network, to optimize the weights of the nodes in the network using a backpropagation algorithm to minimize the training loss function for every training batch. The validation set is used to monitor the training progress on previously unseen data to assess the generalization ability of the trained network weights. Common training callbacks, like early stopping of the training on stagnant loss improvements, or adaptive learning rate scheduling may use the validation loss metric.
 Finally, the test subset will be used to judge the final optimized model(s) after training has finished and hyperparameter tuning has been carried out. This three-fold split is used because the validation dataset implicitly influences the created end-model since hyperparameters will be chosen to improve the performance based on the validation loss. A separate test dataset on the other hand can be used as an unbiased estimator of the performance.
 
-For higher training performance, the pandas tables (so called \mintinline{python}{DataFrames}) are converted to \mintinline{python}{TensorFlow Datasets} using the \mintinline{python}{tf.data} interface. The tf.data pipeline is optimized for high performance and allows easy usage of batch sizes, shuffling, caching and prefetching of data\footnotemark.
+For higher training performance, the pandas tables (so-called \emph{DataFrames}) are converted to \emph{TensorFlow Datasets} using the \mintinline{python}{tf.data} interface. The \mintinline{python}{tf.data} pipeline is optimized for high performance and allows easy usage of batch sizes, shuffling, caching, and prefetching of data\footnotemark.
 \footnotetext{see \url{https://www.tensorflow.org/guide/data_performance} for an overview of the possible performance improvements by parallelization.}
 
 \subsection{Feature Processing}
@@ -324,10 +268,10 @@ The "review count" and "average rating" columns are continuous numerical feature
 The identifiers of books, authors, and users are either numerical or alphanumerical categorical values. Since the ids may be generated randomly and the available data is a randomly scraped subset of all ids, using this data raw or one-hot-encoded would lead to very sparse matrices.
 That's why \emph{IntegerLookup} layers are employed to map these categorical integers to continuous ranges. The layer learns a vocabulary table, adapted from the available input data, and represents the identifiers using an integer index into this dense vocabulary. 
 The \emph{StringLookup} layers translate strings into integers in the same fashion. Each unique raw string input leads to an entry in a (possibly fixed size) vocabulary, into which the processed data will be mapped by an integer index.
-data of different types:
+
 
 \paragraph{Complex text features}
-While ids may be seen as distinct categorical features, long passages of text are more complex, since they consist of arrays of strings (words). These include the review texts, book titles, and description texts. To process this data, a \emph{TextVectorization} preprocessing layer is used, which processes the data in five steps:
+While IDs may be seen as distinct categorical features, long passages of text are more complex, since they consist of arrays of strings (words). These include the review texts, book titles, and description texts. To process this data, a \emph{TextVectorization} preprocessing layer is used, which processes the data in five steps:
 \begin{enumerate}
     \item Standardization
     \item Splitting
@@ -349,10 +293,11 @@ Embedding layers transform integer indices into dense vector representations of 
 
 \section{Neural Network Model}
 As described in \autoref{sec:model_arch}, a stacked Deep \& Cross Network was used.
-The created Model has a \emph{Ranking-Task}, as defined in the new \emph{TensorFlow Recommenders} package \mintinline{python}{tfrs}, was used. The goal of the recommender system is to predict a ranking of the most recommendable items to the input user. To achieve this task, the main goal of the network is to predict an output rating, which makes this a regression problem. That is why the final layer has a linear activation, to predict a continuous numerical rating value as the output.
+The created Model has a \emph{Ranking-Task}, as defined in the new \emph{TensorFlow Recommenders} package \mintinline{python}{tfrs}. The goal of the recommender system is to predict a ranking of the most recommendable items to the input user. To achieve this task, the main goal of the network is to predict an output rating, which makes this a regression problem. That is why the final layer has a linear activation, to predict a continuous numerical rating value as the output.
 
-The training results shown in the next section where produced using the data columns described in\autoref{sec:data_used}. For the first training runs, the joined data table was cut off at 100k entries, which lead to unbalanced data, with close to 100k revie texts by 40k users for only 691 unique books.
-In the latest trainings and in the hyperparameter tuning process, instead the number of unique book ids was set to 100k. This in turn lead to the data table sizes shown in \autoref{tab:used_data} with 100.000 unique books from more than 20k unique authors, read by more than 90k users with a total of almost 900k review texts. The training was performed using a batch size of 512 items per batch. The loss function chosen was mean squared Error (MSE), with root mean squared error (RMSE) as an evaluation metric for the validation data subset.
+The training results shown in the next section were produced using the data columns described in \autoref{sec:data_used}. For the first training runs, the joined data table was cut off at 100k entries, which lead to unbalanced data, with close to 100k review texts by 40k users for only 691 unique books.
+
+In the latest trainings and the hyperparameter tuning process, instead, the number of unique book ids was set to 100k. This in turn led to the data table sizes shown in \autoref{tab:used_data} with 100,000 unique books from more than 20k unique authors, read by more than 90k users with a total of almost 900k review texts. The training was performed using a batch size of 512 items per batch. The loss function chosen was mean squared Error (MSE), with root mean squared error (RMSE) as an evaluation metric for the validation data subset. Early Stopping was used to cancel the training process once validation loss would not improve significantly after a while.
 
 \begin{table}[h]
     \centering
@@ -375,7 +320,7 @@ In the latest trainings and in the hyperparameter tuning process, instead the nu
             \label{tab:used_data}
 \end{table}
     
-\section{Results / Hyperparameter tuning}
+\section{Results and Hyperparameter tuning}
 Because the performance of machine learning systems heavily depends not only on the base architectures used but also on their parametrization, hyperparameter tuning is used to optimize these parameters.
 Because of the large number of parameters and their possible parametrization, the space of possible parameter combinations to be explored grows exponentially large. To handle this problem, automated search algorithms are used to heuristically get to a good, even if possibly not perfect configuration, using a reasonable amount of time and resources.
 
@@ -410,7 +355,7 @@ This process is repeated until a single best algorithm is left. Hyperband improv
 
 
 The implemented Deep \& Cross Network architecture was tuned using the parameter search space as shown in \autoref{tab:hparam_space}.  This large search space was explored using the mentioned HyperBand algorithm.
-In \autoref{fig:rmse_it} one can see the results of the successive halving approach used in the HyperBand algorithm. The figure shows the Root Mean Squared Error (RMSE), which is the evaluation metric for regression problems, in relation to the number of training steps carried out on different model configurations. The evaluations were carried out on the end of each epoch, where the number of models at the subsequent epochs were reduced according to the algorithm. The figure shows all Hyperband runs conducted with slightly different setups, through each whole parameter search space, to show the sheer number of trainings and evaluations.
+In \autoref{fig:rmse_it} one can see the results of the successive halving approach used in the HyperBand algorithm. The figure shows the Root Mean Squared Error (RMSE), which is the evaluation metric for regression problems, in relation to the number of training steps carried out on different model configurations. The evaluations were carried out at the end of each epoch, where the number of models at the subsequent epochs was reduced according to the algorithm. The figure shows all Hyperband runs conducted with slightly different setups, through each whole parameter search space, to show the sheer number of trainings and evaluations.
 
 \begin{figure}[ht]
     \centering
@@ -419,7 +364,7 @@ In \autoref{fig:rmse_it} one can see the results of the successive halving appro
     \label{fig:rmse_it}
 \end{figure}
 
-The parameter configurations of the top 50 best performing models can be found in \autoref{tab:hyp_table}. As one can see in the accompanying \autoref{fig:scatter}, there is no strong correlation between one specific parameter setting and a better performance, since all variables are highly interdependent. That is why one can not define one general rule as to which parameter setting would be better, because only certain specific combinations for this specific model and dataset work better.
+The parameter configurations of the top 50 best performing models can be found in \autoref{tab:hyp_table}. As one can see in the accompanying \autoref{fig:scatter}, there is no strong correlation between one specific parameter setting and better performance, since all variables are highly interdependent. That is why one can not define one general rule as to which parameter setting would be better because only certain specific combinations for this specific model and dataset work better.
 
 \begin{figure}[ht]
     \centering
@@ -431,221 +376,80 @@ The parameter configurations of the top 50 best performing models can be found i
 
 As can be seen in \autoref{tab:hyp_table} and in \autoref{fig:rmse_it}, of all the training efforts with different hyperparameter settings performed, the best settings always lead to the same resulting RMSE of about 1.14.
 One advantage of RMSE is, that the resulting value is of the same unit as the input data, which means that the learned book ratings predicted for the test data presented to the neural network lie 1.14 points - or "stars" in the Goodreads nomenclature - off the actual ratings.
-Working on a scale from 0 to 5, these results may be a bit disheartening, especially since none of the changes made to the network architecture seemed to have any positive effect breaking through this performance "barrier". Indeed, there where a few more experiments carried out, which will not be discussed here any further, using e.g. only a deep network architecture (with 0 number of cross layers), using an adaptive learning rate, using mean absolute error (MAE) instead of RMSE, and with only using ID data without complex text information. But none of those experiments lead to any better results, neither.
+Working on a scale from 0 to 5, these results may be a bit disheartening, especially since none of the changes made to the network architecture seemed to have any positive effect breaking through this performance "barrier". Indeed, there were a few more experiments carried out, which will not be discussed here any further, using e.g. only a deep network architecture (with 0 number of cross layers), using an adaptive learning rate, using mean absolute error (MAE) instead of RMSE, and with only using ID data without complex text information. But unfortunately, none of those experiments lead to any better results, either.
 
 
 \section{conclustion}
 In this paper, the application of a neural network architecture developed in artificial intelligence and recommender systems research has been applied to a publicly available real-world dataset.
 The major tasks in the field of data science, namely data preprocessing, data cleaning and model selection in the preparation stage, and finally model training and hyperparameter optimization have been carried out in this project and documented here.
 Unfortunately, the results achieved by the trained neural network models still leave room for improvement. It goes to show, that the task of recommending a handful from thousands or millions of possible items is a very intricate problem to be solved, with no "go-to-solutions" available such as those that i.e. exist in the field of computer vision like image classification or object detection. 
-Nevertheless, this paper documents the work already completed, and the code produced may be used to further improve the system, by either comparing it to other network architectures, using different word embeddings or developing more problem-specific feature engineering approaches.
+Nevertheless, this paper documents the work already completed, and the code produced may be used to further improve the system, by either comparing it to other network architectures, using different word embeddings, or developing more problem-specific feature engineering approaches.
 
-
-\begin{comment}
-    
-\subsection{Maintaining the Integrity of the Specifications}
-
-The IEEEtran class file is used to format your paper and style the text. All margins, 
-column widths, line spaces, and text fonts are prescribed; please do not 
-alter them. You may note peculiarities. For example, the head margin
-measures proportionately more than is customary. This measurement 
-and others are deliberate, using specifications that anticipate your paper 
-as one part of the entire proceedings, and not as an independent document. 
-Please do not revise any of the current designations.
-
-\section{Prepare Your Paper Before Styling}
-Before you begin to format your paper, first write and save the content as a 
-separate text file. Complete all content and organizational editing before 
-formatting. Please note sections \ref{AA}--\ref{SCM} below for more information on 
-proofreading, spelling and grammar.
-
-Keep your text and graphic files separate until after the text has been 
-formatted and styled. Do not number text heads---{\LaTeX} will do that 
-for you.
-
-\subsection{Abbreviations and Acronyms}\label{AA}
-Define abbreviations and acronyms the first time they are used in the text, 
-even after they have been defined in the abstract. Abbreviations such as 
-IEEE, SI, MKS, CGS, ac, dc, and rms do not have to be defined. Do not use 
-abbreviations in the title or heads unless they are unavoidable.
-
-\subsection{Units}
-\begin{itemize}
-\item Use either SI (MKS) or CGS as primary units. (SI units are encouraged.) English units may be used as secondary units (in parentheses). An exception would be the use of English units as identifiers in trade, such as ``3.5-inch disk drive''.
-\item Avoid combining SI and CGS units, such as current in amperes and magnetic field in oersteds. This often leads to confusion because equations do not balance dimensionally. If you must use mixed units, clearly state the units for each quantity that you use in an equation.
-\item Do not mix complete spellings and abbreviations of units: ``Wb/m\textsuperscript{2}'' or ``webers per square meter'', not ``webers/m\textsuperscript{2}''. Spell out units when they appear in text: ``. . . a few henries'', not ``. . . a few H''.
-\item Use a zero before decimal points: ``0.25'', not ``.25''. Use ``cm\textsuperscript{3}'', not ``cc''.)
-\end{itemize}
-
-\subsection{Equations}
-Number equations consecutively. To make your 
-equations more compact, you may use the solidus (~/~), the exp function, or 
-appropriate exponents. Italicize Roman symbols for quantities and variables, 
-but not Greek symbols. Use a long dash rather than a hyphen for a minus 
-sign. Punctuate equations with commas or periods when they are part of a 
-sentence, as in:
-\begin{equation}
-a+b=\gamma\label{eq}
-\end{equation}
-
-Be sure that the 
-symbols in your equation have been defined before or immediately following 
-the equation. Use ``\eqref{eq}'', not ``Eq.~\eqref{eq}'' or ``equation \eqref{eq}'', except at 
-the beginning of a sentence: ``Equation \eqref{eq} is . . .''
-
-\subsection{\LaTeX-Specific Advice}
-
-Please use ``soft'' (e.g., \verb|\eqref{Eq}|) cross references instead
-of ``hard'' references (e.g., \verb|(1)|). That will make it possible
-to combine sections, add equations, or change the order of figures or
-citations without having to go through the file line by line.
-
-Please don't use the \verb|{eqnarray}| equation environment. Use
-\verb|{align}| or \verb|{IEEEeqnarray}| instead. The \verb|{eqnarray}|
-environment leaves unsightly spaces around relation symbols.
-
-Please note that the \verb|{subequations}| environment in {\LaTeX}
-will increment the main equation counter even when there are no
-equation numbers displayed. If you forget that, you might write an
-article in which the equation numbers skip from (17) to (20), causing
-the copy editors to wonder if you've discovered a new method of
-counting.
-
-{\BibTeX} does not work by magic. It doesn't get the bibliographic
-data from thin air but from .bib files. If you use {\BibTeX} to produce a
-bibliography you must send the .bib files. 
-
-{\LaTeX} can't read your mind. If you assign the same label to a
-subsubsection and a table, you might find that Table I has been cross
-referenced as Table IV-B3. 
-
-{\LaTeX} does not have precognitive abilities. If you put a
-\verb|\label| command before the command that updates the counter it's
-supposed to be using, the label will pick up the last counter to be
-cross referenced instead. In particular, a \verb|\label| command
-should not go before the caption of a figure or a table.
-
-Do not use \verb|\nonumber| inside the \verb|{array}| environment. It
-will not stop equation numbers inside \verb|{array}| (there won't be
-any anyway) and it might stop a wanted equation number in the
-surrounding equation.
-
-\subsection{Some Common Mistakes}\label{SCM}
-\begin{itemize}
-\item The word ``data'' is plural, not singular.
-\item The subscript for the permeability of vacuum $\mu_{0}$, and other common scientific constants, is zero with subscript formatting, not a lowercase letter ``o''.
-\item In American English, commas, semicolons, periods, question and exclamation marks are located within quotation marks only when a complete thought or name is cited, such as a title or full quotation. When quotation marks are used, instead of a bold or italic typeface, to highlight a word or phrase, punctuation should appear outside of the quotation marks. A parenthetical phrase or statement at the end of a sentence is punctuated outside of the closing parenthesis (like this). (A parenthetical sentence is punctuated within the parentheses.)
-\item A graph within a graph is an ``inset'', not an ``insert''. The word alternatively is preferred to the word ``alternately'' (unless you really mean something that alternates).
-\item Do not use the word ``essentially'' to mean ``approximately'' or ``effectively''.
-\item In your paper title, if the words ``that uses'' can accurately replace the word ``using'', capitalize the ``u''; if not, keep using lower-cased.
-\item Be aware of the different meanings of the homophones ``affect'' and ``effect'', ``complement'' and ``compliment'', ``discreet'' and ``discrete'', ``principal'' and ``principle''.
-\item Do not confuse ``imply'' and ``infer''.
-\item The prefix ``non'' is not a word; it should be joined to the word it modifies, usually without a hyphen.
-\item There is no period after the ``et'' in the Latin abbreviation ``et al.''.
-\item The abbreviation ``i.e.'' means ``that is'', and the abbreviation ``e.g.'' means ``for example''.
-\end{itemize}
-An excellent style manual for science writers is \cite{b7}.
-
-\subsection{Authors and Affiliations}
-\textbf{The class file is designed for, but not limited to, six authors.} A 
-minimum of one author is required for all conference articles. Author names 
-should be listed starting from left to right and then moving down to the 
-next line. This is the author sequence that will be used in future citations 
-and by indexing services. Names should not be listed in columns nor group by 
-affiliation. Please keep your affiliations as succinct as possible (for 
-example, do not differentiate among departments of the same organization).
-
-\subsection{Identify the Headings}
-Headings, or heads, are organizational devices that guide the reader through 
-your paper. There are two types: component heads and text heads.
-
-Component heads identify the different components of your paper and are not 
-topically subordinate to each other. Examples include Acknowledgments and 
-References and, for these, the correct style to use is ``Heading 5''. Use 
-``figure caption'' for your Figure captions, and ``table head'' for your 
-table title. Run-in heads, such as ``Abstract'', will require you to apply a 
-style (in this case, italic) in addition to the style provided by the drop 
-down menu to differentiate the head from the text.
-
-Text heads organize the topics on a relational, hierarchical basis. For 
-example, the paper title is the primary text head because all subsequent 
-material relates and elaborates on this one topic. If there are two or more 
-sub-topics, the next level head (uppercase Roman numerals) should be used 
-and, conversely, if there are not at least two sub-topics, then no subheads 
-should be introduced.
-
-\subsection{Figures and Tables}
-\paragraph{Positioning Figures and Tables} Place figures and tables at the top and 
-bottom of columns. Avoid placing them in the middle of columns. Large 
-figures and tables may span across both columns. Figure captions should be 
-below the figures; table heads should appear above the tables. Insert 
-figures and tables after they are cited in the text. Use the abbreviation 
-``Fig.~\ref{fig}'', even at the beginning of a sentence.
-
-\begin{table}[htbp]
-\caption{Table Type Styles}
-\begin{center}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Table}&\multicolumn{3}{|c|}{\textbf{Table Column Head}} \\
-\cline{2-4} 
-\textbf{Head} & \textbf{\textit{Table column subhead}}& \textbf{\textit{Subhead}}& \textbf{\textit{Subhead}} \\
-\hline
-copy& More table copy$^{\mathrm{a}}$& &  \\
-\hline
-\multicolumn{4}{l}{$^{\mathrm{a}}$Sample of a Table footnote.}
-\end{tabular}
-\label{tab1}
-\end{center}
-\end{table}
-
-\begin{figure}[htbp]
-\centerline{\includegraphics{fig1.png}}
-\caption{Example of a figure caption.}
-\label{fig}
-\end{figure}
-
-Figure Labels: Use 8 point Times New Roman for Figure labels. Use words 
-rather than symbols or abbreviations when writing Figure axis labels to 
-avoid confusing the reader. As an example, write the quantity 
-``Magnetization'', or ``Magnetization, M'', not just ``M''. If including 
-units in the label, present them within parentheses. Do not label axes only 
-with units. In the example, write ``Magnetization (A/m)'' or ``Magnetization 
-\{A[m(1)]\}'', not just ``A/m''. Do not label axes with a ratio of 
-quantities and units. For example, write ``Temperature (K)'', not 
-``Temperature/K''.
-
-\section*{Acknowledgment}
-
-The preferred spelling of the word ``acknowledgment'' in America is without 
-an ``e'' after the ``g''. Avoid the stilted expression ``one of us (R. B. 
-G.) thanks $\ldots$''. Instead, try ``R. B. G. thanks$\ldots$''. Put sponsor 
-acknowledgments in the unnumbered footnote on the first page.
-
-\section*{References}
-
-Please number citations consecutively within brackets \cite{b1}. The 
-sentence punctuation follows the bracket \cite{b2}. Refer simply to the reference 
-number, as in \cite{b3}---do not use ``Ref. \cite{b3}'' or ``reference \cite{b3}'' except at 
-the beginning of a sentence: ``Reference \cite{b3} was the first $\ldots$''
-
-Number footnotes separately in superscripts. Place the actual footnote at 
-the bottom of the column in which it was cited. Do not put footnotes in the 
-abstract or reference list. Use letters for table footnotes.
-
-Unless there are six authors or more give all authors' names; do not use 
-``et al.''. Papers that have not been published, even if they have been 
-submitted for publication, should be cited as ``unpublished'' \cite{b4}. Papers 
-that have been accepted for publication should be cited as ``in press'' \cite{b5}. 
-Capitalize only the first word in a paper title, except for proper nouns and 
-element symbols.
-
-For papers published in translation journals, please give the English 
-citation first, followed by the original foreign-language citation \cite{b6}.
-\end{comment}
 \bibliography{bibliography}
 \pagebreak
 \include{hparams_table.tex}
+\begin{table}
+    \centering
+    \caption{sample from the book data set}
+    \label{tab:book_sample}
+    \begin{tabular}{ll}
+        \toprule
+        name &                                                  value \\
+        \midrule
+        isbn                 &                                                    \\
+        text\_reviews\_count   &                                                  7 \\
+        series               &                                           [189911] \\
+        country\_code         &                                                 US \\
+        language\_code        &                                                eng \\
+        popular\_shelves      &  [\{'count': '58', 'name': 'to-read'\}, \{'count':... \\
+        asin                 &                                         B00071IKUY \\
+        is\_ebook             &                                              false \\
+        average\_rating       &                                               4.03 \\
+        kindle\_asin          &                                                    \\
+        similar\_books        &  [19997, 828466, 1569323, 425389, 1176674, 2627... \\
+        description          &  Omnibus book club edition containing the Ladie... \\
+        format               &                                          Hardcover \\
+        link                 &  https://www.goodreads.com/book/show/7327624-th... \\
+        authors              &               [\{'author\_id': '10333', 'role': ''\}] \\
+        publisher            &                             Nelson Doubleday, Inc. \\
+        num\_pages            &                                                600 \\
+        publication\_day      &                                                    \\
+        isbn13               &                                                    \\
+        publication\_month    &                                                    \\
+        edition\_information  &                                  Book Club Edition \\
+        publication\_year     &                                               1987 \\
+        url                  &  https://www.goodreads.com/book/show/7327624-th... \\
+        image\_url            &  https://images.gr-assets.com/books/1304100136m... \\
+        book\_id              &                                            7327624 \\
+        ratings\_count        &                                                140 \\
+        work\_id              &                                            8948723 \\
+        title                &  The Unschooled Wizard (Sun Wolf and Starhawk, ... \\
+        title\_without\_series &  The Unschooled Wizard (Sun Wolf and Starhawk, ... \\
+        \bottomrule
+        \end{tabular}
+        
+\end{table}
 
-
+\begin{table}
+    \label{tab:review_sample}
+    \caption{sample from the review data set}
+    \begin{tabular}{ll}
+        \toprule
+        name &                                                  value \\
+        \midrule
+        user\_id      &                   8842281e1d1347389f2ab93d60773d4d \\
+        book\_id      &                                            4986701 \\
+        review\_id    &                   bb7de32f9fadc36627e61aaef7a93142 \\
+        rating       &                                                  4 \\
+        review\_text  &  Found the Goodreads down image in this, and ma... \\
+        date\_added   &                     Thu Aug 04 10:02:02 -0700 2011 \\
+        date\_updated &                     Thu Aug 04 10:02:02 -0700 2011 \\
+        read\_at      &                                                NaT \\
+        started\_at   &                                                NaT \\
+        n\_votes      &                                                  6 \\
+        n\_comments   &                                                  4 \\
+        \bottomrule
+        \end{tabular}
+        
+\end{table}
 \end{document}
