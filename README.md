@@ -21,5 +21,7 @@ Optional:
 => this idea has since been scrapped, since it's out of reach in the scale of this student project.
 
 
+*this repo needs some cleanup*, main file is the `keras_dcn.ipynb` Notebook
+
 [^fn1]: Mengting Wan, Rishabh Misra, Ndapa Nakashole, Julian McAuley, https://sites.google.com/eng.ucsd.edu/ucsdbookgraph/home.
 [^fn2]: F. Maxwell Harper and Joseph A. Konstan, https://grouplens.org/datasets/movielens/25m/
